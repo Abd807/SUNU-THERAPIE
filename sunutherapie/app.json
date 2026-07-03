@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "SunuThérapie",
+    "slug": "sunutherapie",
+    "version": "4.0.2",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/3a7fd94e-9cf9-413d-a2ae-21c21e8b7741"
+    },
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B6E6E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.khadre.sunutherapiev2",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "SunuThérapie utilise la caméra pour les consultations vidéo avec votre psychothérapeute.",
+        "NSMicrophoneUsageDescription": "SunuThérapie utilise le microphone pour les consultations vidéo avec votre psychothérapeute.",
+        "NSPhotoLibraryUsageDescription": "SunuThérapie accède à vos photos pour personnaliser votre profil."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B6E6E"
+      },
+      "package": "com.khadre.sunutherapiev2",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "blockedPermissions": [
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3a7fd94e-9cf9-413d-a2ae-21c21e8b7741"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-asset",
+      "expo-updates",
+      "expo-status-bar"
+    ]
+  }
+}

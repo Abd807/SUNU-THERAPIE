@@ -1,0 +1,49 @@
+# ===== Secrets & environment — NEVER commit these =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+
+# ===== Dependencies =====
+node_modules/
+vendor/
+
+# ===== Laravel (backend) =====
+public/storage
+public/build
+public/hot
+storage/*.key
+storage/logs/*.log
+bootstrap/cache/*.php
+.phpunit.result.cache
+
+# ===== React Native / Expo (mobile) =====
+.expo/
+dist/
+web-build/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+ios/build/
+ios/Pods/
+*.orig.*
+
+# ===== Build & logs =====
+build/
+*.log
+npm-debug.*
+yarn-error.log
+
+# ===== Editor / OS =====
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
