@@ -40,6 +40,17 @@ export const apiGetProfile = async () => {
   return response.json();
 };
 
+// ─── NOTIFICATIONS PUSH ───
+export const apiSavePushToken = async (pushToken) => {
+  const headers = await getHeaders();
+  const response = await fetch(`${API_URL}/push-token`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ push_token: pushToken }),
+  });
+  return response.json();
+};
+
 // ─── PSYCHOTHÉRAPEUTES ───
 export const apiGetPsychotherapeutes = async () => {
   const headers = await getHeaders();
@@ -128,6 +139,14 @@ export const apiGetRessources = async () => {
   const response = await fetch(`${API_URL}/ressources`, { headers });
   const data = await response.json();
   return { success: data.success, data: data.data || data.ressources || [] };
+};
+
+// ─── BIBLIOTHÈQUE PUBLIQUE (livres & vidéos) ───
+export const apiGetBibliotheque = async () => {
+  const headers = await getHeaders();
+  const response = await fetch(`${API_URL}/bibliotheque`, { headers });
+  const data = await response.json();
+  return { success: data.success, data: data.data || [] };
 };
 
 // ─── ASSISTANT IA ───

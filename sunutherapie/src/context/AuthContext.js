@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiLogin, apiLogout, apiRegister } from '../services/api';
+import { apiLogin, apiLogout, apiRegister, apiSavePushToken } from '../services/api';
+import { registerForPushNotificationsAsync } from '../services/push';
 
 const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
@@ -25,6 +26,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     loadStoredAuth();
   }, []);
+
+  // Enregistre le token de notifications push dès qu'un utilisateur est connecté.
+  useEffect(() => {
+    if (user) {
+      registerForPushNotificationsAsync()
+        .then((t) => { if (t) apiSavePushToken(t).catch(() => {}); })
+        .catch(() => {});
+    }
+  }, [user]);
 
   const loadStoredAuth = async () => {
     try {

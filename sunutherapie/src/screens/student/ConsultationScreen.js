@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView,
-  ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, Modal, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ActivityIndicator, Alert, Modal, RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS, API_URL } from '../../config/constants';
+import { API_URL } from '../../config/constants';
+import { colors, spacing, radius, shadows } from '../../config/theme';
+import { Card, Avatar, Badge, Button, EmptyState } from '../../components/ui';
 import {
   apiGetConsultationsEtudiant,
   apiGetPsychotherapeutesDisponibles,
   apiCreerConsultation,
   apiGetVideoToken,
 } from '../../services/api';
+
+const STATUTS = {
+  en_attente: { tone: 'warning', label: 'En attente' },
+  acceptee: { tone: 'success', label: 'Acceptée' },
+  terminee: { tone: 'neutral', label: 'Terminée' },
+  refusee: { tone: 'danger', label: 'Refusée' },
+};
+
+const FILTRES = [
+  { key: 'all', label: 'Tout' },
+  { key: 'en_attente', label: 'En attente' },
+  { key: 'acceptee', label: 'Acceptées' },
+  { key: 'terminee', label: 'Terminées' },
+];
 
 export default function ConsultationScreen({ route, navigation }) {
   const { token } = useAuth();
@@ -25,24 +42,12 @@ export default function ConsultationScreen({ route, navigation }) {
   const [saving, setSaving] = useState(false);
   const [filtre, setFiltre] = useState('all');
 
-  const [form, setForm] = useState({
-    psy_id: null,
-    date: '',
-    creneau: null,
-    motif: '',
-  });
-
-  const filtres = [
-    { key: 'all', label: '📋 Tout' },
-    { key: 'en_attente', label: '⏳ En attente' },
-    { key: 'acceptee', label: '✅ Acceptées' },
-    { key: 'terminee', label: '✔️ Terminées' },
-  ];
+  const [form, setForm] = useState({ psy_id: null, date: '', creneau: null, motif: '' });
 
   useEffect(() => {
     loadData();
     if (route?.params?.psyId) {
-      setForm(f => ({ ...f, psy_id: route.params.psyId }));
+      setForm((f) => ({ ...f, psy_id: route.params.psyId }));
       setModalVisible(true);
     }
   }, []);
@@ -93,18 +98,18 @@ export default function ConsultationScreen({ route, navigation }) {
     setSaving(true);
     try {
       const res = await apiCreerConsultation({
-  psychologue_id: form.psy_id,
-date_consultation: `${form.date} ${form.creneau.heure_debut}`,
-  motif_consultation: form.motif,
-  type: 'planifiee',
-  mode: 'video',
-});
+        psychologue_id: form.psy_id,
+        date_consultation: `${form.date} ${form.creneau.heure_debut}`,
+        motif_consultation: form.motif,
+        type: 'planifiee',
+        mode: 'video',
+      });
 
       if (res.success) {
         setModalVisible(false);
         setForm({ psy_id: null, date: '', creneau: null, motif: '' });
         loadData();
-        Alert.alert('✅ Demande envoyée !', 'Votre demande de consultation a été envoyée au psychothérapeute.');
+        Alert.alert('Demande envoyée !', 'Votre demande de consultation a été envoyée au psychothérapeute.');
       } else {
         Alert.alert('Erreur', res.message || 'Erreur lors de la réservation');
       }
@@ -119,7 +124,7 @@ date_consultation: `${form.date} ${form.creneau.heure_debut}`,
     try {
       const res = await apiGetVideoToken(consultation.id);
       if (!res.success) {
-        Alert.alert('Erreur', res.message || 'Impossible de démarrer l\'appel');
+        Alert.alert('Erreur', res.message || "Impossible de démarrer l'appel");
         return;
       }
       navigation.navigate('VideoCall', {
@@ -135,109 +140,95 @@ date_consultation: `${form.date} ${form.creneau.heure_debut}`,
     }
   };
 
-  const getStatutColor = (statut) => {
-    switch (statut) {
-      case 'en_attente': return COLORS.warning;
-      case 'acceptee': return COLORS.success;
-      case 'terminee': return COLORS.greyDark;
-      case 'refusee': return COLORS.danger;
-      default: return COLORS.greyDark;
-    }
-  };
-
-  const getStatutLabel = (statut) => {
-    switch (statut) {
-      case 'en_attente': return '⏳ En attente';
-      case 'acceptee': return '✅ Acceptée';
-      case 'terminee': return '✔️ Terminée';
-      case 'refusee': return '❌ Refusée';
-      default: return statut;
-    }
-  };
-
   const consultationsFiltrees = filtre === 'all'
     ? consultations
-    : consultations.filter(c => c.statut === filtre);
+    : consultations.filter((c) => c.statut === filtre);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📅 Mes Consultations</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-          <Text style={styles.addBtnText}>+ RDV</Text>
+        <Text style={styles.headerTitle}>Mes Consultations</Text>
+        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)} activeOpacity={0.85}>
+          <Ionicons name="add" size={18} color={colors.primary} />
+          <Text style={styles.addBtnText}>RDV</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtresContainer}>
-        {filtres.map(f => (
-          <TouchableOpacity
-            key={f.key}
-            style={[styles.filtreBtn, filtre === f.key && styles.filtreBtnActive]}
-            onPress={() => setFiltre(f.key)}
-          >
-            <Text style={[styles.filtreText, filtre === f.key && styles.filtreTextActive]}>{f.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtresContainer}>
+          {FILTRES.map((f) => (
+            <TouchableOpacity
+              key={f.key}
+              style={[styles.filtreBtn, filtre === f.key && styles.filtreBtnActive]}
+              onPress={() => setFiltre(f.key)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.filtreText, filtre === f.key && styles.filtreTextActive]}>{f.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor={colors.primary} colors={[colors.primary]} />
+        }
         contentContainerStyle={styles.listContainer}
       >
         {consultationsFiltrees.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>📭</Text>
-            <Text style={styles.emptyTitle}>Aucune consultation</Text>
-            <TouchableOpacity style={styles.emptyBtn} onPress={() => setModalVisible(true)}>
-              <Text style={styles.emptyBtnText}>+ Prendre un RDV</Text>
-            </TouchableOpacity>
-          </View>
+          <EmptyState
+            icon="calendar-outline"
+            title="Aucune consultation"
+            subtitle="Prenez un rendez-vous avec un psychothérapeute pour démarrer."
+            actionLabel="Prendre un RDV"
+            onAction={() => setModalVisible(true)}
+            style={{ marginTop: spacing.xl }}
+          />
         ) : (
-          consultationsFiltrees.map((c) => (
-            <View key={c.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {c.psychologue?.user?.name?.charAt(0)?.toUpperCase() || '👤'}
-                  </Text>
+          consultationsFiltrees.map((c) => {
+            const st = STATUTS[c.statut] || { tone: 'neutral', label: c.statut };
+            return (
+              <Card key={c.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Avatar name={c.psychologue?.user?.name} size={46} />
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.cardName}>{c.psychologue?.user?.name}</Text>
+                    <View style={styles.metaRow}>
+                      <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                      <Text style={styles.cardDate}>
+                        {c.date_consultation
+                          ? new Date(c.date_consultation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+                          : 'Date à confirmer'}
+                      </Text>
+                    </View>
+                    {c.motif ? (
+                      <View style={styles.metaRow}>
+                        <Ionicons name="chatbubble-ellipses-outline" size={13} color={colors.textMuted} />
+                        <Text style={styles.cardMotif}>{c.motif}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  <Badge label={st.label} tone={st.tone} />
                 </View>
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>{c.psychologue?.user?.name}</Text>
-                  <Text style={styles.cardDate}>
-                    📅 {c.date_consultation
-                      ? new Date(c.date_consultation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-                      : 'Date à confirmer'}
-                  </Text>
-                  {c.motif && <Text style={styles.cardMotif}>💬 {c.motif}</Text>}
-                </View>
-                <View style={[styles.statutBadge, { backgroundColor: getStatutColor(c.statut) + '20' }]}>
-                  <Text style={[styles.statutText, { color: getStatutColor(c.statut) }]}>
-                    {getStatutLabel(c.statut)}
-                  </Text>
-                </View>
-              </View>
 
-              {/* Bouton appel vidéo si acceptée */}
-              {c.statut === 'acceptee' && (
-                <TouchableOpacity
-                  style={styles.videoBtn}
-                  onPress={() => handleDemarrerAppel(c)}
-                >
-                  <Text style={styles.videoBtnText}>📹 Rejoindre la consultation</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))
+                {c.statut === 'acceptee' ? (
+                  <TouchableOpacity style={styles.videoBtn} onPress={() => handleDemarrerAppel(c)} activeOpacity={0.85}>
+                    <Ionicons name="videocam" size={18} color={colors.white} />
+                    <Text style={styles.videoBtnText}>Rejoindre la consultation</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </Card>
+            );
+          })
         )}
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -245,175 +236,160 @@ date_consultation: `${form.date} ${form.creneau.heure_debut}`,
       {/* Modal prise de RDV */}
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <ScrollView>
+          <ScrollView keyboardShouldPersistTaps="handled">
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>📅 Prendre un RDV</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Prendre un rendez-vous</Text>
 
               <Text style={styles.modalLabel}>Choisir un psychothérapeute</Text>
               {psyList.length === 0 ? (
-                <View style={styles.noPsyCard}>
-                  <Text style={styles.noPsyText}>Aucun psychothérapeute disponible</Text>
+                <View style={styles.noDataCard}>
+                  <Text style={styles.noDataText}>Aucun psychothérapeute disponible</Text>
                 </View>
               ) : (
-                psyList.map(psy => (
-                  <TouchableOpacity
-                    key={psy.id}
-                    style={[styles.psyBtn, form.psy_id === psy.id && styles.psyBtnActive]}
-                    onPress={() => handlePsySelect(psy.id)}
-                  >
-                    <View style={styles.psyAvatar}>
-                      <Text style={styles.psyAvatarText}>
-                        {psy.user?.name?.charAt(0)?.toUpperCase() || '👤'}
-                      </Text>
-                    </View>
-                    <View style={styles.psyInfo}>
-                      <Text style={[styles.psyName, form.psy_id === psy.id && styles.psyNameActive]}>
-                        {psy.user?.name}
-                      </Text>
-                      <Text style={styles.psySub}>Psychothérapeute — GIE FUAM</Text>
-                    </View>
-                    {form.psy_id === psy.id && <Text>✅</Text>}
-                  </TouchableOpacity>
-                ))
+                psyList.map((psy) => {
+                  const active = form.psy_id === psy.id;
+                  return (
+                    <TouchableOpacity
+                      key={psy.id}
+                      style={[styles.psyBtn, active && styles.psyBtnActive]}
+                      onPress={() => handlePsySelect(psy.id)}
+                      activeOpacity={0.85}
+                    >
+                      <Avatar name={psy.user?.name} size={40} />
+                      <View style={styles.psyInfo}>
+                        <Text style={[styles.psyName, active && styles.psyNameActive]}>{psy.user?.name}</Text>
+                        <Text style={styles.psySub}>Psychothérapeute — GIE FUAM</Text>
+                      </View>
+                      {active ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
+                    </TouchableOpacity>
+                  );
+                })
               )}
 
-              {form.psy_id && (
+              {form.psy_id ? (
                 <>
                   <Text style={styles.modalLabel}>Choisir une date</Text>
                   <View style={styles.calendarContainer}>
                     <Calendar
                       onDayPress={handleDateSelect}
                       minDate={new Date().toISOString().split('T')[0]}
-                      markedDates={form.date ? { [form.date]: { selected: true, selectedColor: COLORS.primary } } : {}}
+                      markedDates={form.date ? { [form.date]: { selected: true, selectedColor: colors.primary } } : {}}
                       theme={{
-                        selectedDayBackgroundColor: COLORS.primary,
-                        todayTextColor: COLORS.primary,
-                        arrowColor: COLORS.primary,
-                        monthTextColor: COLORS.text,
+                        selectedDayBackgroundColor: colors.primary,
+                        todayTextColor: colors.primary,
+                        arrowColor: colors.primary,
+                        monthTextColor: colors.text,
                       }}
                     />
                   </View>
                 </>
-              )}
+              ) : null}
 
-              {form.date && form.psy_id && (
+              {form.date && form.psy_id ? (
                 <>
                   <Text style={styles.modalLabel}>Choisir un créneau</Text>
                   {creneaux.length === 0 ? (
-                    <View style={styles.noCreneauCard}>
-                      <Text style={styles.noCreneauText}>Aucun créneau disponible ce jour</Text>
+                    <View style={styles.noDataCard}>
+                      <Text style={styles.noDataText}>Aucun créneau disponible ce jour</Text>
                     </View>
                   ) : (
                     <View style={styles.creneauxGrid}>
-                      {creneaux.map((c, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          style={[styles.creneauBtn, form.creneau === c && styles.creneauBtnActive]}
-                          onPress={() => setForm({ ...form, creneau: c })}
-                        >
-                          <Text style={[styles.creneauText, form.creneau === c && styles.creneauTextActive]}>
-                            {c.heure_debut}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                      {creneaux.map((c, i) => {
+                        const active = form.creneau === c;
+                        return (
+                          <TouchableOpacity
+                            key={i}
+                            style={[styles.creneauBtn, active && styles.creneauBtnActive]}
+                            onPress={() => setForm({ ...form, creneau: c })}
+                            activeOpacity={0.85}
+                          >
+                            <Text style={[styles.creneauText, active && styles.creneauTextActive]}>{c.heure_debut}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
                   )}
                 </>
-              )}
+              ) : null}
 
-              {form.creneau && (
-                <>
-                  <View style={styles.resumeCard}>
-                    <Text style={styles.resumeText}>
-                      📅 {form.date} à {form.creneau?.heure_debut}
-                    </Text>
-                  </View>
-                </>
-              )}
+              {form.creneau ? (
+                <View style={styles.resumeCard}>
+                  <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                  <Text style={styles.resumeText}>{form.date} à {form.creneau?.heure_debut}</Text>
+                </View>
+              ) : null}
 
               <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.cancelText}>Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.saveBtn, (!form.creneau || saving) && styles.saveBtnDisabled]}
+                <Button label="Annuler" variant="outline" onPress={() => setModalVisible(false)} style={{ flex: 1 }} />
+                <Button
+                  label="Confirmer le RDV"
                   onPress={handleReserver}
-                  disabled={!form.creneau || saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator color={COLORS.white} size="small" />
-                  ) : (
-                    <Text style={styles.saveText}>Confirmer le RDV</Text>
-                  )}
-                </TouchableOpacity>
+                  loading={saving}
+                  disabled={!form.creneau}
+                  style={{ flex: 1 }}
+                />
               </View>
             </View>
           </ScrollView>
         </View>
       </Modal>
-
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: COLORS.primary, padding: 20, paddingTop: 10, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.white },
-  addBtn: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  addBtnText: { color: COLORS.primary, fontWeight: 'bold', fontSize: 14 },
-  filtresContainer: { paddingHorizontal: 16, paddingVertical: 12, maxHeight: 60 },
-  filtreBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.white, marginRight: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  filtreBtnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filtreText: { fontSize: 12, color: COLORS.greyDark, fontWeight: '600' },
-  filtreTextActive: { color: COLORS.white },
-  listContainer: { paddingHorizontal: 16, paddingTop: 8 },
-  emptyCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 20 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, marginBottom: 16 },
-  emptyBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  emptyBtnText: { color: COLORS.white, fontWeight: 'bold' },
-  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+  container: { flex: 1, backgroundColor: colors.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: colors.primary, paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xl,
+    borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl,
+  },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: colors.white },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.white, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full },
+  addBtnText: { color: colors.primary, fontWeight: '700', fontSize: 14 },
+
+  filtresContainer: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
+  filtreBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  filtreBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filtreText: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
+  filtreTextActive: { color: colors.white },
+
+  listContainer: { paddingHorizontal: spacing.lg, paddingTop: spacing.xs },
+  card: { marginBottom: spacing.md },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start' },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  avatarText: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
-  cardInfo: { flex: 1 },
-  cardName: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
-  cardDate: { fontSize: 12, color: COLORS.primary, marginTop: 4 },
-  cardMotif: { fontSize: 12, color: COLORS.greyDark, marginTop: 2 },
-  statutBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  statutText: { fontSize: 11, fontWeight: '600' },
-  videoBtn: { backgroundColor: '#E8F5E9', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 12, borderWidth: 1, borderColor: COLORS.success },
-  videoBtnText: { fontSize: 14, fontWeight: 'bold', color: COLORS.success },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: COLORS.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.text, marginBottom: 20, textAlign: 'center' },
-  modalLabel: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 10, marginTop: 14 },
-  noPsyCard: { backgroundColor: COLORS.background, borderRadius: 10, padding: 14, alignItems: 'center' },
-  noPsyText: { fontSize: 13, color: COLORS.greyDark },
-  psyBtn: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, backgroundColor: COLORS.background, marginBottom: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  psyBtnActive: { backgroundColor: COLORS.primaryLight, borderColor: COLORS.primary },
-  psyAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  psyAvatarText: { fontSize: 16, fontWeight: 'bold', color: COLORS.primary },
+  cardInfo: { flex: 1, marginLeft: spacing.md },
+  cardName: { fontSize: 15, fontWeight: '700', color: colors.text },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  cardDate: { fontSize: 12, color: colors.primary },
+  cardMotif: { fontSize: 12, color: colors.textMuted, flex: 1 },
+  videoBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: colors.success, borderRadius: radius.md, padding: 12, marginTop: spacing.md,
+  },
+  videoBtnText: { fontSize: 14, fontWeight: '700', color: colors.white },
+
+  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, padding: spacing.xxl, paddingBottom: spacing.huge },
+  modalHandle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong, marginBottom: spacing.lg },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: spacing.lg, textAlign: 'center' },
+  modalLabel: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: spacing.md, marginTop: spacing.md },
+  noDataCard: { backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: 14, alignItems: 'center' },
+  noDataText: { fontSize: 13, color: colors.textMuted },
+  psyBtn: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 12, borderRadius: radius.md, backgroundColor: colors.surfaceAlt, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border },
+  psyBtnActive: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   psyInfo: { flex: 1 },
-  psyName: { fontSize: 14, fontWeight: 'bold', color: COLORS.text },
-  psyNameActive: { color: COLORS.primary },
-  psySub: { fontSize: 11, color: COLORS.greyDark },
-  calendarContainer: { borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' },
-  noCreneauCard: { backgroundColor: COLORS.background, borderRadius: 10, padding: 14, alignItems: 'center' },
-  noCreneauText: { fontSize: 13, color: COLORS.greyDark },
+  psyName: { fontSize: 14, fontWeight: '700', color: colors.text },
+  psyNameActive: { color: colors.primaryDark },
+  psySub: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  calendarContainer: { borderRadius: radius.md, overflow: 'hidden', borderWidth: 1, borderColor: colors.border },
   creneauxGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  creneauBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: COLORS.background, borderWidth: 1, borderColor: '#E2E8F0' },
-  creneauBtnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  creneauText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
-  creneauTextActive: { color: COLORS.white },
-  resumeCard: { backgroundColor: COLORS.primaryLight, borderRadius: 10, padding: 12, marginTop: 12, alignItems: 'center' },
-  resumeText: { fontSize: 14, fontWeight: 'bold', color: COLORS.primary },
-  modalActions: { flexDirection: 'row', gap: 12, marginTop: 20, marginBottom: 10 },
-  cancelBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center', backgroundColor: COLORS.background, borderWidth: 1, borderColor: '#E2E8F0' },
-  cancelText: { fontSize: 15, color: COLORS.text, fontWeight: '600' },
-  saveBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center', backgroundColor: COLORS.primary },
-  saveBtnDisabled: { backgroundColor: COLORS.greyDark },
-  saveText: { fontSize: 15, color: COLORS.white, fontWeight: 'bold' },
+  creneauBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: radius.md, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border },
+  creneauBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  creneauText: { fontSize: 14, fontWeight: '600', color: colors.text },
+  creneauTextActive: { color: colors.white },
+  resumeCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.primaryLight, borderRadius: radius.md, padding: 12, marginTop: spacing.md },
+  resumeText: { fontSize: 14, fontWeight: '700', color: colors.primaryDark },
+  modalActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xl },
 });

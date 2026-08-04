@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { COLORS } from '../../config/constants';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, radius } from '../../config/theme';
 import RessourcesScreen from './RessourcesScreen';
 import NotesScreen from './NotesScreen';
 
@@ -8,56 +10,46 @@ export default function RessourcesNotesScreen() {
   const [onglet, setOnglet] = useState('ressources');
 
   return (
-    <SafeAreaView style={styles.container}>
-
-      {/* Header commun */}
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {onglet === 'ressources' ? '📚 Ressources' : '📝 Notes'}
-        </Text>
+        <Text style={styles.headerTitle}>{onglet === 'ressources' ? 'Ressources' : 'Notes'}</Text>
       </View>
 
-      {/* Toggle */}
-      <View style={styles.toggleContainer}>
-        <TouchableOpacity
-          style={[styles.toggleBtn, onglet === 'ressources' && styles.toggleBtnActive]}
-          onPress={() => setOnglet('ressources')}
-        >
-          <Text style={[styles.toggleText, onglet === 'ressources' && styles.toggleTextActive]}>
-            📚 Ressources
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.toggleBtn, onglet === 'notes' && styles.toggleBtnActive]}
-          onPress={() => setOnglet('notes')}
-        >
-          <Text style={[styles.toggleText, onglet === 'notes' && styles.toggleTextActive]}>
-            📝 Notes
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.segment}>
+        {[
+          { key: 'ressources', label: 'Ressources', icon: 'library' },
+          { key: 'notes', label: 'Notes', icon: 'document-text' },
+        ].map((s) => {
+          const active = onglet === s.key;
+          return (
+            <TouchableOpacity
+              key={s.key}
+              style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+              onPress={() => setOnglet(s.key)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name={active ? s.icon : `${s.icon}-outline`} size={16} color={active ? colors.white : colors.textMuted} />
+              <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{s.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {/* Contenu sans header */}
       <View style={styles.content}>
-        {onglet === 'ressources' ? (
-          <RessourcesScreen hideHeader={true} />
-        ) : (
-          <NotesScreen hideHeader={true} />
-        )}
+        {onglet === 'ressources' ? <RessourcesScreen hideHeader /> : <NotesScreen hideHeader />}
       </View>
-
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.secondary, padding: 20, paddingTop: 10, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.white },
-  toggleContainer: { flexDirection: 'row', margin: 16, backgroundColor: COLORS.grey, borderRadius: 12, padding: 4 },
-  toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  toggleBtnActive: { backgroundColor: COLORS.secondary },
-  toggleText: { fontSize: 14, fontWeight: '600', color: COLORS.greyDark },
-  toggleTextActive: { color: COLORS.white },
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { backgroundColor: colors.primary, paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xl, borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: colors.white },
+  segment: { flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: radius.full, padding: 4, marginHorizontal: spacing.lg, marginTop: spacing.lg },
+  segmentBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: radius.full },
+  segmentBtnActive: { backgroundColor: colors.primary },
+  segmentText: { fontSize: 13, fontWeight: '700', color: colors.textMuted },
+  segmentTextActive: { color: colors.white },
   content: { flex: 1 },
 });

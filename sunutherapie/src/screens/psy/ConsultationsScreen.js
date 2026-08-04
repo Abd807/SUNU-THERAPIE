@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView,
-  ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ActivityIndicator, Alert, RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS, API_URL } from '../../config/constants';
+import { colors, spacing, radius } from '../../config/theme';
+import { Card, Avatar, Badge, Button, EmptyState } from '../../components/ui';
 import {
   apiGetConsultationsPsy,
   apiAccepterConsultation,
@@ -14,19 +16,26 @@ import {
   apiGetVideoToken,
 } from '../../services/api';
 
+const STATUTS = {
+  en_attente: { tone: 'warning', label: 'En attente' },
+  acceptee: { tone: 'success', label: 'Acceptée' },
+  terminee: { tone: 'neutral', label: 'Terminée' },
+  refusee: { tone: 'danger', label: 'Refusée' },
+};
+
+const FILTRES = [
+  { key: 'en_attente', label: 'En attente' },
+  { key: 'acceptee', label: 'Acceptées' },
+  { key: 'terminee', label: 'Terminées' },
+  { key: 'all', label: 'Toutes' },
+];
+
 export default function ConsultationsScreen({ navigation }) {
-  const { userProfile, token } = useAuth();
+  const { token } = useAuth();
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filtre, setFiltre] = useState('en_attente');
-
-  const filtres = [
-    { key: 'en_attente', label: '⏳ En attente' },
-    { key: 'acceptee', label: '✅ Acceptées' },
-    { key: 'terminee', label: '✔️ Terminées' },
-    { key: 'all', label: '📋 Toutes' },
-  ];
 
   useEffect(() => { loadConsultations(); }, []);
 
@@ -47,8 +56,8 @@ export default function ConsultationsScreen({ navigation }) {
       { text: 'Annuler', style: 'cancel' },
       { text: 'Accepter', onPress: async () => {
         const res = await apiAccepterConsultation(id);
-        if (res.success) { loadConsultations(); Alert.alert('✅', 'Consultation acceptée !'); }
-      }},
+        if (res.success) { loadConsultations(); Alert.alert('Accepté', 'Consultation acceptée !'); }
+      } },
     ]);
   };
 
@@ -57,8 +66,8 @@ export default function ConsultationsScreen({ navigation }) {
       { text: 'Annuler', style: 'cancel' },
       { text: 'Refuser', style: 'destructive', onPress: async () => {
         const res = await apiRefuserConsultation(id, 'Indisponibilité');
-        if (res.success) { loadConsultations(); Alert.alert('❌', 'Consultation refusée'); }
-      }},
+        if (res.success) { loadConsultations(); Alert.alert('Refusé', 'Consultation refusée'); }
+      } },
     ]);
   };
 
@@ -67,8 +76,8 @@ export default function ConsultationsScreen({ navigation }) {
       { text: 'Annuler', style: 'cancel' },
       { text: 'Terminer', onPress: async () => {
         const res = await apiTerminerConsultation(id);
-        if (res.success) { loadConsultations(); Alert.alert('✔️', 'Consultation terminée !'); }
-      }},
+        if (res.success) { loadConsultations(); Alert.alert('Terminé', 'Consultation terminée !'); }
+      } },
     ]);
   };
 
@@ -76,7 +85,7 @@ export default function ConsultationsScreen({ navigation }) {
     try {
       const res = await apiGetVideoToken(consultation.id);
       if (!res.success) {
-        Alert.alert('Erreur', res.message || 'Impossible de démarrer l\'appel');
+        Alert.alert('Erreur', res.message || "Impossible de démarrer l'appel");
         return;
       }
       navigation.navigate('VideoCall', {
@@ -94,118 +103,97 @@ export default function ConsultationsScreen({ navigation }) {
 
   const consultationsFiltrees = filtre === 'all'
     ? consultations
-    : consultations.filter(c => c.statut === filtre);
-
-  const getStatutColor = (statut) => {
-    switch (statut) {
-      case 'en_attente': return COLORS.warning;
-      case 'acceptee': return COLORS.success;
-      case 'terminee': return COLORS.greyDark;
-      case 'refusee': return COLORS.danger;
-      default: return COLORS.greyDark;
-    }
-  };
+    : consultations.filter((c) => c.statut === filtre);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.secondary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📋 Mes Consultations</Text>
+        <Text style={styles.headerTitle}>Mes Consultations</Text>
         <Text style={styles.headerSub}>{consultations.length} au total</Text>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtresContainer}>
-        {filtres.map((f) => (
-          <TouchableOpacity
-            key={f.key}
-            style={[styles.filtreBtn, filtre === f.key && styles.filtreBtnActive]}
-            onPress={() => setFiltre(f.key)}
-          >
-            <Text style={[styles.filtreText, filtre === f.key && styles.filtreTextActive]}>{f.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtresContainer}>
+          {FILTRES.map((f) => (
+            <TouchableOpacity
+              key={f.key}
+              style={[styles.filtreBtn, filtre === f.key && styles.filtreBtnActive]}
+              onPress={() => setFiltre(f.key)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.filtreText, filtre === f.key && styles.filtreTextActive]}>{f.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadConsultations(); }} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadConsultations(); }} tintColor={colors.primary} colors={[colors.primary]} />
+        }
         contentContainerStyle={styles.listContainer}
       >
         {consultationsFiltrees.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>📭</Text>
-            <Text style={styles.emptyText}>Aucune consultation dans cette catégorie</Text>
-          </View>
+          <EmptyState icon="calendar-outline" title="Aucune consultation" subtitle="Aucune consultation dans cette catégorie." style={{ marginTop: spacing.xl }} />
         ) : (
-          consultationsFiltrees.map((c) => (
-            <View key={c.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {c.etudiant?.user?.name?.charAt(0)?.toUpperCase() || '👤'}
-                  </Text>
+          consultationsFiltrees.map((c) => {
+            const st = STATUTS[c.statut] || { tone: 'neutral', label: c.statut };
+            return (
+              <Card key={c.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Avatar name={c.etudiant?.user?.name} size={46} />
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.cardName}>{c.etudiant?.user?.name || 'Étudiant'}</Text>
+                    {(c.etudiant?.universite || c.etudiant?.niveau) ? (
+                      <Text style={styles.cardUniversite}>{[c.etudiant?.universite, c.etudiant?.niveau].filter(Boolean).join(' — ')}</Text>
+                    ) : null}
+                    <View style={styles.metaRow}>
+                      <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                      <Text style={styles.cardDate}>
+                        {c.date_consultation
+                          ? new Date(c.date_consultation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+                          : 'Date à confirmer'}
+                      </Text>
+                    </View>
+                  </View>
+                  <Badge label={st.label} tone={st.tone} />
                 </View>
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>{c.etudiant?.user?.name || 'Étudiant'}</Text>
-                  <Text style={styles.cardUniversite}>{c.etudiant?.universite} — {c.etudiant?.niveau}</Text>
-                  <Text style={styles.cardDate}>
-                    📅 {c.date_consultation
-                      ? new Date(c.date_consultation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-                      : 'Date à confirmer'}
-                  </Text>
-                </View>
-                <View style={[styles.statutBadge, { backgroundColor: getStatutColor(c.statut) + '20' }]}>
-                  <Text style={[styles.statutText, { color: getStatutColor(c.statut) }]}>
-                    {c.statut === 'en_attente' ? '⏳' : c.statut === 'acceptee' ? '✅' : c.statut === 'terminee' ? '✔️' : '❌'}
-                  </Text>
-                </View>
-              </View>
 
-              {c.motif ? (
-                <View style={styles.motifContainer}>
-                  <Text style={styles.motifLabel}>Motif :</Text>
-                  <Text style={styles.motifText}>{c.motif}</Text>
-                </View>
-              ) : null}
+                {c.motif ? (
+                  <View style={styles.motifContainer}>
+                    <Text style={styles.motifLabel}>Motif</Text>
+                    <Text style={styles.motifText}>{c.motif}</Text>
+                  </View>
+                ) : null}
 
-              {/* Actions en attente */}
-              {c.statut === 'en_attente' && (
-                <View style={styles.actions}>
-                  <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn]} onPress={() => handleAccepter(c.id)}>
-                    <Text style={styles.actionBtnText}>✅ Accepter</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.actionBtn, styles.refuserBtn]} onPress={() => handleRefuser(c.id)}>
-                    <Text style={[styles.actionBtnText, { color: COLORS.danger }]}>❌ Refuser</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                {c.statut === 'en_attente' ? (
+                  <View style={styles.actions}>
+                    <Button label="Accepter" icon="checkmark" onPress={() => handleAccepter(c.id)} style={{ flex: 1 }} />
+                    <Button label="Refuser" variant="danger" icon="close" onPress={() => handleRefuser(c.id)} style={{ flex: 1 }} />
+                  </View>
+                ) : null}
 
-              {/* Actions acceptée */}
-              {c.statut === 'acceptee' && (
-                <View style={styles.actions}>
-                  <TouchableOpacity
-                    style={[styles.actionBtn, styles.videoBtn]}
-                    onPress={() => handleDemarrerAppel(c)}
-                  >
-                    <Text style={styles.videoBtnText}>📹 Démarrer l'appel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.actionBtn, styles.terminerBtn]}
-                    onPress={() => handleTerminer(c.id)}
-                  >
-                    <Text style={styles.actionBtnText}>✔️ Terminer</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          ))
+                {c.statut === 'acceptee' ? (
+                  <View style={styles.actions}>
+                    <TouchableOpacity style={styles.videoBtn} onPress={() => handleDemarrerAppel(c)} activeOpacity={0.85}>
+                      <Ionicons name="videocam" size={18} color={colors.white} />
+                      <Text style={styles.videoBtnText}>Démarrer l'appel</Text>
+                    </TouchableOpacity>
+                    <Button label="Terminer" variant="outline" icon="flag" onPress={() => handleTerminer(c.id)} style={{ flex: 1 }} />
+                  </View>
+                ) : null}
+              </Card>
+            );
+          })
         )}
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -214,39 +202,28 @@ export default function ConsultationsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.secondary, padding: 20, paddingTop: 10, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.white },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 4 },
-  filtresContainer: { paddingHorizontal: 16, paddingVertical: 12, maxHeight: 60 },
-  filtreBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.white, marginRight: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  filtreBtnActive: { backgroundColor: COLORS.secondary, borderColor: COLORS.secondary },
-  filtreText: { fontSize: 13, color: COLORS.greyDark, fontWeight: '600' },
-  filtreTextActive: { color: COLORS.white },
-  listContainer: { paddingHorizontal: 16, paddingTop: 8 },
-  emptyCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 20 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontSize: 14, color: COLORS.greyDark, textAlign: 'center' },
-  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+  container: { flex: 1, backgroundColor: colors.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  header: { backgroundColor: colors.primary, paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xl, borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: colors.white },
+  headerSub: { fontSize: 13, color: colors.primaryLight, marginTop: 4 },
+  filtresContainer: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
+  filtreBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  filtreBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filtreText: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
+  filtreTextActive: { color: colors.white },
+  listContainer: { paddingHorizontal: spacing.lg, paddingTop: spacing.xs },
+  card: { marginBottom: spacing.md },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start' },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: COLORS.secondaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  avatarText: { fontSize: 20, fontWeight: 'bold', color: COLORS.secondary },
-  cardInfo: { flex: 1 },
-  cardName: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
-  cardUniversite: { fontSize: 12, color: COLORS.greyDark, marginTop: 2 },
-  cardDate: { fontSize: 12, color: COLORS.primary, marginTop: 4 },
-  statutBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  statutText: { fontSize: 16 },
-  motifContainer: { marginTop: 12, padding: 10, backgroundColor: COLORS.background, borderRadius: 8 },
-  motifLabel: { fontSize: 12, color: COLORS.greyDark, fontWeight: '600' },
-  motifText: { fontSize: 13, color: COLORS.text, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  actionBtn: { flex: 1, padding: 10, borderRadius: 10, alignItems: 'center' },
-  acceptBtn: { backgroundColor: '#E8F5E9' },
-  refuserBtn: { backgroundColor: '#FFEBEE' },
-  terminerBtn: { backgroundColor: '#E3F2FD' },
-  videoBtn: { backgroundColor: '#E8F5E9', borderWidth: 1, borderColor: COLORS.success },
-  actionBtnText: { fontSize: 13, fontWeight: 'bold', color: COLORS.success },
-  videoBtnText: { fontSize: 13, fontWeight: 'bold', color: COLORS.success },
+  cardInfo: { flex: 1, marginLeft: spacing.md },
+  cardName: { fontSize: 15, fontWeight: '700', color: colors.text },
+  cardUniversite: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  cardDate: { fontSize: 12, color: colors.primary },
+  motifContainer: { marginTop: spacing.md, padding: spacing.md, backgroundColor: colors.surfaceAlt, borderRadius: radius.md },
+  motifLabel: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
+  motifText: { fontSize: 13, color: colors.text, marginTop: 2 },
+  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  videoBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.success, borderRadius: radius.full, paddingVertical: 13 },
+  videoBtnText: { fontSize: 15, fontWeight: '700', color: colors.white },
 });

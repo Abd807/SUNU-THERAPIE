@@ -12,6 +12,7 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 import StudentNavigator from './StudentNavigator';
 import PsyNavigator from './PsyNavigator';
 import VideoCallScreen from '../screens/shared/VideoCallScreen';
+import PdfViewerScreen from '../screens/shared/PdfViewerScreen';
 
 const Stack = createStackNavigator();
 
@@ -42,11 +43,13 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="PsyApp" component={PsyNavigator} />
             <Stack.Screen name="VideoCall" component={VideoCallScreen} />
+            <Stack.Screen name="PdfViewer" component={PdfViewerScreen} />
           </>
         ) : (
           <>
             <Stack.Screen name="StudentApp" component={StudentNavigator} />
             <Stack.Screen name="VideoCall" component={VideoCallScreen} />
+            <Stack.Screen name="PdfViewer" component={PdfViewerScreen} />
           </>
         )}
       </Stack.Navigator>

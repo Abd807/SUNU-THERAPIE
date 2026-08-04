@@ -7,7 +7,7 @@
     "updates": {
       "url": "https://u.expo.dev/3a7fd94e-9cf9-413d-a2ae-21c21e8b7741"
     },
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -53,7 +53,8 @@
       "expo-font",
       "expo-asset",
       "expo-updates",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-notifications"
     ]
   }
 }

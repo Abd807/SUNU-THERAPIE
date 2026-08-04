@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\ExpoPushService;
 
 class ConsultationController extends Controller
 {
@@ -95,6 +96,15 @@ class ConsultationController extends Controller
                     }
                 );
             }
+
+            if ($psyUser && $psyUser->push_token) {
+                (new ExpoPushService())->send(
+                    $psyUser->push_token,
+                    'Nouveau rendez-vous',
+                    "{$etudiant->name} a réservé une consultation.",
+                    ['type' => 'consultation', 'id' => $consultation->id]
+                );
+            }
         } catch (\Exception $e) {
             Log::error('Email RDV psy: ' . $e->getMessage());
         }
@@ -122,6 +132,21 @@ class ConsultationController extends Controller
                 'statut' => 'acceptee',
                 'agora_channel_name' => $channelName,
             ]);
+
+            try {
+                $consultation->load('etudiant.user');
+                $etuUser = $consultation->etudiant?->user;
+                if ($etuUser && $etuUser->push_token) {
+                    (new ExpoPushService())->send(
+                        $etuUser->push_token,
+                        'Rendez-vous accepté',
+                        'Votre consultation a été acceptée.',
+                        ['type' => 'consultation', 'id' => $consultation->id]
+                    );
+                }
+            } catch (\Exception $e) {
+                Log::error('Push accept: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
@@ -156,6 +181,21 @@ class ConsultationController extends Controller
                 'statut' => 'refusee',
                 'motif_refus' => $request->motif_refus,
             ]);
+
+            try {
+                $consultation->load('etudiant.user');
+                $etuUser = $consultation->etudiant?->user;
+                if ($etuUser && $etuUser->push_token) {
+                    (new ExpoPushService())->send(
+                        $etuUser->push_token,
+                        'Rendez-vous refusé',
+                        'Votre demande de consultation a été refusée.',
+                        ['type' => 'consultation', 'id' => $consultation->id]
+                    );
+                }
+            } catch (\Exception $e) {
+                Log::error('Push refuse: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../config/constants';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../config/theme';
 
 import HomeScreen from '../screens/student/HomeScreen';
 import ConsultationScreen from '../screens/student/ConsultationScreen';
@@ -17,30 +18,35 @@ import AssistantScreen from '../screens/student/AssistantScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+const ICONS = {
+  Accueil: 'home',
+  Consultations: 'calendar',
+  Forum: 'chatbubbles',
+  Ressources: 'library',
+  Profil: 'person',
+};
+
 function StudentTabs() {
+  const insets = useSafeAreaInsets();
   return (
-   <Tab.Navigator
+    <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.greyDark,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textFaint,
+        // Hauteur + marge basse adaptées à la safe area (barre de gestes / home indicator)
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: '#EEEEEE',
-          paddingBottom: 8,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          height: 60 + insets.bottom,
+          paddingBottom: Math.max(insets.bottom, 8),
           paddingTop: 8,
-          height: 65,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        tabBarIcon: ({ color, size }) => {
-          const icons = {
-            Accueil: 'home-outline',
-            Consultations: 'calendar-outline',
-            Forum: 'chatbubbles-outline',
-            Ressources: 'library-outline',
-            Profil: 'person-outline',
-          };
-          return <Ionicons name={icons[route.name]} size={22} color={color} />;
+        tabBarIcon: ({ color, focused }) => {
+          const base = ICONS[route.name] || 'ellipse';
+          const name = focused ? base : `${base}-outline`;
+          return <Ionicons name={name} size={22} color={color} />;
         },
       })}
     >
@@ -66,14 +72,14 @@ export default function StudentNavigator() {
 
   if (!initialRoute) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.primary }}>
-        <ActivityIndicator size="large" color={COLORS.white} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.primary }}>
+        <ActivityIndicator size="large" color={colors.white} />
       </View>
     );
   }
 
   return (
-   <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="StudentTabs" component={StudentTabs} />
       <Stack.Screen name="Assistant" component={AssistantScreen} />

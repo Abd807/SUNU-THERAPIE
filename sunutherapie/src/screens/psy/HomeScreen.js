@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView,
-  ScrollView, TouchableOpacity, ActivityIndicator, Switch,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS, API_URL } from '../../config/constants';
+import { API_URL } from '../../config/constants';
+import { colors, spacing, radius } from '../../config/theme';
+import { Card, Avatar, Badge, SectionHeader, EmptyState } from '../../components/ui';
 import { apiGetConsultationsPsy } from '../../services/api';
+
+const STATUTS = {
+  en_attente: { tone: 'warning', label: 'En attente' },
+  acceptee: { tone: 'success', label: 'Acceptée' },
+  terminee: { tone: 'neutral', label: 'Terminée' },
+  refusee: { tone: 'danger', label: 'Refusée' },
+};
 
 export default function HomeScreen({ navigation }) {
   const { userProfile, logout, token } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [disponible, setDisponible] = useState(
-    userProfile?.psychologue?.disponible || false
-  );
-  const [stats, setStats] = useState({
-    en_attente: 0,
-    acceptees: 0,
-    terminees: 0,
-    total: 0,
-  });
+  const [disponible, setDisponible] = useState(userProfile?.psychologue?.disponible || false);
+  const [stats, setStats] = useState({ en_attente: 0, acceptees: 0, terminees: 0, total: 0 });
   const [dernieresConsultations, setDernieresConsultations] = useState([]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -32,9 +33,9 @@ export default function HomeScreen({ navigation }) {
       if (res.success) {
         const data = res.data || [];
         setStats({
-          en_attente: data.filter(c => c.statut === 'en_attente').length,
-          acceptees: data.filter(c => c.statut === 'acceptee').length,
-          terminees: data.filter(c => c.statut === 'terminee').length,
+          en_attente: data.filter((c) => c.statut === 'en_attente').length,
+          acceptees: data.filter((c) => c.statut === 'acceptee').length,
+          terminees: data.filter((c) => c.statut === 'terminee').length,
           total: data.length,
         });
         setDernieresConsultations(data.slice(0, 3));
@@ -59,150 +60,135 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const getStatutColor = (statut) => {
-    const colors = { en_attente: COLORS.warning, acceptee: COLORS.success, terminee: COLORS.greyDark, refusee: COLORS.danger };
-    return colors[statut] || COLORS.greyDark;
-  };
-
-  const getStatutLabel = (statut) => {
-    const labels = { en_attente: '⏳ En attente', acceptee: '✅ Acceptée', terminee: '✔️ Terminée', refusee: '❌ Refusée' };
-    return labels[statut] || statut;
-  };
+  const STAT_TILES = [
+    { key: 'en_attente', value: stats.en_attente, label: 'En attente', icon: 'hourglass-outline', tint: colors.warning, bg: colors.warningLight },
+    { key: 'acceptees', value: stats.acceptees, label: 'Acceptées', icon: 'checkmark-circle-outline', tint: colors.success, bg: colors.successLight },
+    { key: 'terminees', value: stats.terminees, label: 'Terminées', icon: 'flag-outline', tint: colors.accent, bg: colors.accentLight },
+    { key: 'total', value: stats.total, label: 'Total', icon: 'stats-chart-outline', tint: colors.primary, bg: colors.primaryLight },
+  ];
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.secondary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* En-tête */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <View style={{ flex: 1 }}>
             <Text style={styles.greeting}>Bonjour 👋</Text>
             <Text style={styles.userName}>Dr. {userProfile?.name}</Text>
             <Text style={styles.userInfo}>Psychothérapeute — GIE FUAM</Text>
           </View>
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-            <Text style={styles.logoutIcon}>🚪</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <Avatar name={userProfile?.name} size={44} bg="rgba(255,255,255,0.18)" fg={colors.white} />
+            <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.7}>
+              <Ionicons name="log-out-outline" size={20} color={colors.white} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Disponibilité */}
-        <View style={styles.disponibiliteCard}>
-          <View>
-            <Text style={styles.disponibiliteTitle}>Mon statut de disponibilité</Text>
-            <Text style={[styles.disponibiliteStatus, { color: disponible ? COLORS.success : COLORS.danger }]}>
-              {disponible ? '🟢 Disponible pour consultations' : '🔴 Indisponible'}
-            </Text>
-          </View>
-          <Switch
-            value={disponible}
-            onValueChange={toggleDisponibilite}
-            trackColor={{ false: '#E2E8F0', true: COLORS.primaryLight }}
-            thumbColor={disponible ? COLORS.primary : COLORS.greyDark}
-          />
+        <View style={styles.dispoWrap}>
+          <Card style={styles.dispoCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.dispoTitle}>Statut de disponibilité</Text>
+              <View style={styles.dispoStatusRow}>
+                <View style={[styles.dot, { backgroundColor: disponible ? colors.success : colors.danger }]} />
+                <Text style={[styles.dispoStatus, { color: disponible ? colors.success : colors.danger }]}>
+                  {disponible ? 'Disponible pour consultations' : 'Indisponible'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={disponible}
+              onValueChange={toggleDisponibilite}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={disponible ? colors.primary : colors.textFaint}
+            />
+          </Card>
         </View>
 
         {/* Stats */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: '#FFF3E0' }]}>
-            <Text style={styles.statNumber}>{stats.en_attente}</Text>
-            <Text style={styles.statLabel}>⏳ En attente</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#E8F5E9' }]}>
-            <Text style={styles.statNumber}>{stats.acceptees}</Text>
-            <Text style={styles.statLabel}>✅ Acceptées</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#E3F2FD' }]}>
-            <Text style={styles.statNumber}>{stats.terminees}</Text>
-            <Text style={styles.statLabel}>✔️ Terminées</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#F3E5F5' }]}>
-            <Text style={styles.statNumber}>{stats.total}</Text>
-            <Text style={styles.statLabel}>📊 Total</Text>
-          </View>
+          {STAT_TILES.map((s) => (
+            <View key={s.key} style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: s.bg }]}>
+                <Ionicons name={s.icon} size={20} color={s.tint} />
+              </View>
+              <Text style={styles.statNumber}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Dernières consultations */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>📅 Dernières consultations</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Consultations')}>
-              <Text style={styles.seeAll}>Voir tout →</Text>
-            </TouchableOpacity>
-          </View>
-
+          <SectionHeader
+            title="Dernières consultations"
+            actionLabel="Voir tout"
+            onAction={() => navigation.navigate('Consultations')}
+          />
           {dernieresConsultations.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>Aucune consultation pour le moment</Text>
-            </View>
+            <EmptyState icon="calendar-outline" title="Aucune consultation" subtitle="Vous n'avez pas encore de consultations." />
           ) : (
-            dernieresConsultations.map((c) => (
-              <View key={c.id} style={styles.consultCard}>
-                <View style={styles.consultAvatar}>
-                  <Text style={styles.consultAvatarText}>
-                    {c.etudiant?.user?.name?.charAt(0)?.toUpperCase() || '👤'}
-                  </Text>
-                </View>
-                <View style={styles.consultInfo}>
-                  <Text style={styles.consultName}>{c.etudiant?.user?.name}</Text>
-                  <Text style={styles.consultDate}>
-                    {c.date_consultation
-                      ? new Date(c.date_consultation).toLocaleDateString('fr-FR')
-                      : 'Date à confirmer'}
-                  </Text>
-                </View>
-                <View style={[styles.statutBadge, { backgroundColor: getStatutColor(c.statut) + '20' }]}>
-                  <Text style={[styles.statutText, { color: getStatutColor(c.statut) }]}>
-                    {getStatutLabel(c.statut)}
-                  </Text>
-                </View>
-              </View>
-            ))
+            dernieresConsultations.map((c) => {
+              const st = STATUTS[c.statut] || { tone: 'neutral', label: c.statut };
+              return (
+                <Card key={c.id} style={styles.consultCard}>
+                  <Avatar name={c.etudiant?.user?.name} size={42} />
+                  <View style={styles.consultInfo}>
+                    <Text style={styles.consultName}>{c.etudiant?.user?.name}</Text>
+                    <Text style={styles.consultDate}>
+                      {c.date_consultation ? new Date(c.date_consultation).toLocaleDateString('fr-FR') : 'Date à confirmer'}
+                    </Text>
+                  </View>
+                  <Badge label={st.label} tone={st.tone} />
+                </Card>
+              );
+            })
           )}
         </View>
-
-        <View style={{ height: 20 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: COLORS.secondary, padding: 20, paddingTop: 10, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerLeft: { flex: 1 },
-  greeting: { fontSize: 14, color: 'rgba(255,255,255,0.8)' },
-  userName: { fontSize: 22, fontWeight: 'bold', color: COLORS.white, marginTop: 2 },
-  userInfo: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
-  logoutBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
-  logoutIcon: { fontSize: 18 },
-  disponibiliteCard: { margin: 16, backgroundColor: COLORS.white, borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
-  disponibiliteTitle: { fontSize: 14, fontWeight: 'bold', color: COLORS.text, marginBottom: 4 },
-  disponibiliteStatus: { fontSize: 13, fontWeight: '600' },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, gap: 10, marginBottom: 8 },
-  statCard: { width: '47%', borderRadius: 12, padding: 14, alignItems: 'center' },
-  statNumber: { fontSize: 32, fontWeight: 'bold', color: COLORS.text },
-  statLabel: { fontSize: 12, color: COLORS.greyDark, marginTop: 4, textAlign: 'center' },
-  section: { marginHorizontal: 16, marginBottom: 16 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
-  seeAll: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
-  emptyCard: { backgroundColor: COLORS.white, borderRadius: 12, padding: 20, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
-  emptyText: { fontSize: 14, color: COLORS.greyDark, textAlign: 'center' },
-  consultCard: { backgroundColor: COLORS.white, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#E2E8F0' },
-  consultAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: COLORS.secondaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  consultAvatarText: { fontSize: 18, fontWeight: 'bold', color: COLORS.secondary },
-  consultInfo: { flex: 1 },
-  consultName: { fontSize: 14, fontWeight: 'bold', color: COLORS.text },
-  consultDate: { fontSize: 12, color: COLORS.greyDark, marginTop: 2 },
-  statutBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  statutText: { fontSize: 11, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: colors.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  header: {
+    flexDirection: 'row', alignItems: 'flex-start', backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxxl,
+    borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl,
+  },
+  greeting: { fontSize: 14, color: colors.primaryLight },
+  userName: { fontSize: 22, fontWeight: '700', color: colors.white, marginTop: 2 },
+  userInfo: { fontSize: 12, color: colors.primaryLight, marginTop: 2 },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  logoutBtn: { width: 40, height: 40, borderRadius: 20, marginLeft: spacing.sm, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center' },
+
+  dispoWrap: { paddingHorizontal: spacing.lg, marginTop: -spacing.xl },
+  dispoCard: { flexDirection: 'row', alignItems: 'center' },
+  dispoTitle: { fontSize: 14, fontWeight: '700', color: colors.text, marginBottom: 6 },
+  dispoStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  dispoStatus: { fontSize: 13, fontWeight: '600' },
+
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, gap: spacing.md, marginTop: spacing.lg },
+  statCard: { width: '47%', backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg, borderWidth: 1, borderColor: colors.border },
+  statIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
+  statNumber: { fontSize: 28, fontWeight: '700', color: colors.text },
+  statLabel: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+
+  section: { marginHorizontal: spacing.lg, marginTop: spacing.xxl },
+  consultCard: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
+  consultInfo: { flex: 1, marginLeft: spacing.md },
+  consultName: { fontSize: 14, fontWeight: '700', color: colors.text },
+  consultDate: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
 });

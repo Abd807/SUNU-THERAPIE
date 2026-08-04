@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView,
-  ScrollView, TouchableOpacity, Alert, TextInput,
-  ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Alert, TextInput, ActivityIndicator,
 } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { COLORS, API_URL } from '../../config/constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config/constants';
+import { colors, spacing, radius, shadows } from '../../config/theme';
+import { Card, Avatar, Badge, Button } from '../../components/ui';
 
 export default function ProfileScreen() {
   const { userProfile, logout, token } = useAuth();
@@ -31,7 +34,7 @@ export default function ProfileScreen() {
       const data = await response.json();
       if (data.success) {
         await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
-        Alert.alert('✅ Succès', 'Profil mis à jour !');
+        Alert.alert('Succès', 'Profil mis à jour !');
         setEditing(false);
       } else {
         Alert.alert('Erreur', data.message || 'Erreur mise à jour');
@@ -44,19 +47,17 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Voulez-vous vraiment vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Déconnexion', style: 'destructive', onPress: logout },
-      ]
-    );
+    Alert.alert('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Déconnexion', style: 'destructive', onPress: logout },
+    ]);
   };
 
-  const infoRow = (label, value, icon) => (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoIcon}>{icon}</Text>
+  const InfoRow = ({ icon, label, value, last }) => (
+    <View style={[styles.infoRow, last && { borderBottomWidth: 0 }]}>
+      <View style={styles.infoIcon}>
+        <Ionicons name={icon} size={18} color={colors.primary} />
+      </View>
       <View style={styles.infoContent}>
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value || 'Non renseigné'}</Text>
@@ -65,55 +66,50 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* En-tête */}
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {userProfile?.name?.charAt(0)?.toUpperCase() || '👤'}
-            </Text>
-          </View>
+          <Avatar name={userProfile?.name} size={84} bg="rgba(255,255,255,0.22)" fg={colors.white} />
           <Text style={styles.name}>{userProfile?.name}</Text>
-          <Text style={styles.role}>👨‍🎓 Étudiant</Text>
-          <View style={styles.badgeContainer}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{userProfile?.etudiant?.universite || 'UCAD'}</Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{userProfile?.etudiant?.niveau || 'N/A'}</Text>
-            </View>
+          <View style={styles.roleRow}>
+            <Ionicons name="school" size={14} color={colors.primaryLight} />
+            <Text style={styles.role}>Étudiant</Text>
+          </View>
+          <View style={styles.badgeRow}>
+            <View style={styles.headBadge}><Text style={styles.headBadgeText}>{userProfile?.etudiant?.universite || 'UCAD'}</Text></View>
+            <View style={styles.headBadge}><Text style={styles.headBadgeText}>{userProfile?.etudiant?.niveau || 'N/A'}</Text></View>
           </View>
         </View>
 
         {/* Psy référent */}
-        {userProfile?.etudiant?.psy_referent_id && (
-          <View style={styles.psyRefSection}>
-            <Text style={styles.sectionTitle}>👨‍⚕️ Mon psychothérapeute référent</Text>
-            <View style={styles.psyRefCard}>
+        {userProfile?.etudiant?.psy_referent_id ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mon psychothérapeute référent</Text>
+            <Card style={styles.psyRefCard}>
               <View style={styles.psyRefAvatar}>
-                <Text style={styles.psyRefAvatarText}>👨‍⚕️</Text>
+                <Ionicons name="medkit" size={22} color={colors.primary} />
               </View>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.psyRefName}>Psychothérapeute assigné</Text>
-                <Text style={styles.psyRefSince}>Suivi en cours</Text>
+                <Badge label="Suivi en cours" tone="success" dot style={{ marginTop: 4 }} />
               </View>
-            </View>
+            </Card>
           </View>
-        )}
+        ) : null}
 
         {/* Informations */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>📋 Mes informations</Text>
-            <TouchableOpacity onPress={() => setEditing(!editing)}>
-              <Text style={styles.editBtn}>{editing ? 'Annuler' : '✏️ Modifier'}</Text>
+            <Text style={styles.sectionTitle}>Mes informations</Text>
+            <TouchableOpacity onPress={() => setEditing(!editing)} style={styles.editBtn} activeOpacity={0.7}>
+              <Ionicons name={editing ? 'close' : 'create-outline'} size={16} color={colors.primary} />
+              <Text style={styles.editBtnText}>{editing ? 'Annuler' : 'Modifier'}</Text>
             </TouchableOpacity>
           </View>
 
           {editing ? (
-            <View style={styles.editForm}>
+            <Card>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Nom complet</Text>
                 <TextInput
@@ -121,6 +117,7 @@ export default function ProfileScreen() {
                   value={form.name}
                   onChangeText={(v) => setForm({ ...form, name: v })}
                   placeholder="Votre nom"
+                  placeholderTextColor={colors.textFaint}
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -130,79 +127,88 @@ export default function ProfileScreen() {
                   value={form.telephone}
                   onChangeText={(v) => setForm({ ...form, telephone: v })}
                   placeholder="77 XXX XX XX"
+                  placeholderTextColor={colors.textFaint}
                   keyboardType="phone-pad"
                 />
               </View>
-              <TouchableOpacity
-                style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
+              <Button
+                label="Enregistrer"
+                icon="checkmark"
+                loading={loading}
                 onPress={handleUpdate}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color={COLORS.white} size="small" />
-                ) : (
-                  <Text style={styles.saveBtnText}>Enregistrer</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                full
+              />
+            </Card>
           ) : (
-            <View style={styles.infoCard}>
-              {infoRow('Email', userProfile?.email, '📧')}
-              {infoRow('Téléphone', userProfile?.telephone, '📱')}
-              {infoRow('Université', userProfile?.etudiant?.universite, '🏫')}
-              {infoRow('Faculté', userProfile?.etudiant?.faculte, '📚')}
-              {infoRow('Niveau', userProfile?.etudiant?.niveau, '🎓')}
-              {infoRow('N° Carte étudiant', userProfile?.etudiant?.numero_carte_etudiant, '🪪')}
-            </View>
+            <Card padded={false} style={styles.infoCard}>
+              <InfoRow icon="mail-outline" label="Email" value={userProfile?.email} />
+              <InfoRow icon="call-outline" label="Téléphone" value={userProfile?.telephone} />
+              <InfoRow icon="business-outline" label="Université" value={userProfile?.etudiant?.universite} />
+              <InfoRow icon="library-outline" label="Faculté" value={userProfile?.etudiant?.faculte} />
+              <InfoRow icon="school-outline" label="Niveau" value={userProfile?.etudiant?.niveau} />
+              <InfoRow icon="card-outline" label="N° Carte étudiant" value={userProfile?.etudiant?.numero_carte_etudiant} last />
+            </Card>
           )}
         </View>
 
         {/* Déconnexion */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-            <Text style={styles.logoutText}>🚪 Se déconnecter</Text>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
+            <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+            <Text style={styles.logoutText}>Se déconnecter</Text>
           </TouchableOpacity>
         </View>
-
-        <View style={{ height: 30 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { alignItems: 'center', backgroundColor: COLORS.primary, paddingVertical: 30, paddingHorizontal: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
-  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: COLORS.white },
-  name: { fontSize: 22, fontWeight: 'bold', color: COLORS.white, marginBottom: 4 },
-  role: { fontSize: 14, color: COLORS.primaryLight, marginBottom: 12 },
-  badgeContainer: { flexDirection: 'row', gap: 8 },
-  badge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 12, color: COLORS.white, fontWeight: '600' },
-  psyRefSection: { marginHorizontal: 16, marginTop: 20 },
-  section: { marginHorizontal: 16, marginTop: 20 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, marginBottom: 12 },
-  editBtn: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
-  infoCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 4, borderWidth: 1, borderColor: '#E2E8F0' },
-  infoRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
-  infoIcon: { fontSize: 20, marginRight: 12 },
+  container: { flex: 1, backgroundColor: colors.background },
+  header: {
+    alignItems: 'center', backgroundColor: colors.primary, paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xl, borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl,
+  },
+  name: { fontSize: 22, fontWeight: '700', color: colors.white, marginTop: spacing.md },
+  roleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 5 },
+  role: { fontSize: 14, color: colors.primaryLight },
+  badgeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  headBadge: { backgroundColor: 'rgba(255,255,255,0.20)', paddingHorizontal: 12, paddingVertical: 5, borderRadius: radius.full },
+  headBadgeText: { fontSize: 12, color: colors.white, fontWeight: '600' },
+
+  section: { marginHorizontal: spacing.lg, marginTop: spacing.xl },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
+  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: spacing.md },
+  editBtnText: { fontSize: 14, color: colors.primary, fontWeight: '600' },
+
+  psyRefCard: { flexDirection: 'row', alignItems: 'center' },
+  psyRefAvatar: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primaryLight,
+    justifyContent: 'center', alignItems: 'center', marginRight: spacing.md,
+  },
+  psyRefName: { fontSize: 15, fontWeight: '700', color: colors.text },
+
+  infoCard: { paddingHorizontal: spacing.lg },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
+  infoIcon: {
+    width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primaryLight,
+    alignItems: 'center', justifyContent: 'center', marginRight: spacing.md,
+  },
   infoContent: { flex: 1 },
-  infoLabel: { fontSize: 12, color: COLORS.greyDark },
-  infoValue: { fontSize: 14, color: COLORS.text, fontWeight: '500', marginTop: 2 },
-  editForm: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#E2E8F0' },
-  inputGroup: { marginBottom: 16 },
-  label: { fontSize: 13, fontWeight: '600', color: COLORS.text, marginBottom: 6 },
-  input: { backgroundColor: COLORS.background, borderWidth: 1.5, borderColor: '#D4EDED', borderRadius: 10, padding: 12, fontSize: 15, color: COLORS.text },
-  saveBtn: { backgroundColor: COLORS.primary, borderRadius: 10, padding: 14, alignItems: 'center', marginTop: 4 },
-  saveBtnDisabled: { backgroundColor: COLORS.greyDark },
-  saveBtnText: { color: COLORS.white, fontSize: 15, fontWeight: 'bold' },
-  psyRefCard: { backgroundColor: COLORS.white, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
-  psyRefAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  psyRefAvatarText: { fontSize: 22 },
-  psyRefName: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
-  psyRefSince: { fontSize: 12, color: COLORS.greyDark, marginTop: 2 },
-  logoutBtn: { backgroundColor: '#FEE2E2', borderRadius: 12, padding: 16, alignItems: 'center' },
-  logoutText: { color: COLORS.danger, fontSize: 15, fontWeight: 'bold' },
+  infoLabel: { fontSize: 12, color: colors.textMuted },
+  infoValue: { fontSize: 14, color: colors.text, fontWeight: '600', marginTop: 2 },
+
+  inputGroup: { marginBottom: spacing.lg },
+  label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 },
+  input: {
+    backgroundColor: colors.surfaceAlt, borderWidth: 1.5, borderColor: colors.border,
+    borderRadius: radius.md, padding: 12, fontSize: 15, color: colors.text,
+  },
+
+  logoutBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: colors.dangerLight, borderRadius: radius.md, padding: 16,
+  },
+  logoutText: { color: colors.danger, fontSize: 15, fontWeight: '700' },
 });

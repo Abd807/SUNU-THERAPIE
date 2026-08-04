@@ -47,3 +47,11 @@ yarn-error.log
 *.iml
 .DS_Store
 Thumbs.db
+
+# ===== Ajouts déploiement =====
+*.zip
+_to_delete/
+_team_photos/
+_site_logos/
+build-*.log
+*.bak

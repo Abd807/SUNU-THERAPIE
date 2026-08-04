@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser
         'verification_code',
         'verification_expires_at',
         'email_verified',
+        'push_token',
     ];
 
     protected $hidden = [

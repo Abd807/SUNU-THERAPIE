@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\SponsorController;
 use App\Http\Controllers\Api\TransfertDossierController;
 use App\Http\Controllers\Api\NotePsyController;
 use App\Http\Controllers\Api\ForumController;
+use App\Http\Controllers\Api\BibliothequeController;
+use App\Http\Controllers\Api\PushTokenController;
 
 
 // ─── Routes publiques ────────────────────────────────────────
@@ -26,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/push-token', [PushTokenController::class, 'store']);
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     // ─── Assistant IA (orientation étudiant) ───
@@ -73,6 +76,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ressources', [RessourceController::class, 'store']);
         Route::delete('/ressources/{id}', [RessourceController::class, 'destroy']);
     });
+
+    // ─── Bibliothèque publique (livres & vidéos, accessible à tous) ───
+    Route::get('/bibliotheque', [BibliothequeController::class, 'index']);
 
     // ─── Notes Psy ───
     Route::get('/notes/mes-notes', [NotePsyController::class, 'notesEtudiant']);

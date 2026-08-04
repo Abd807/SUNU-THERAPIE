@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet,
-  ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, Modal, TextInput, Linking,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Linking,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS, API_URL } from '../../config/constants';
+import { API_URL } from '../../config/constants';
+import { colors, spacing, radius } from '../../config/theme';
+import { Card, Avatar, Badge, Button, EmptyState } from '../../components/ui';
 
 const TYPES = [
-  { key: 'video', label: 'Vidéo / YouTube', icon: '🎥' },
-  { key: 'pdf', label: 'PDF', icon: '📄' },
-  { key: 'note', label: 'Note', icon: '📝' },
+  { key: 'video', label: 'Vidéo', icon: 'videocam-outline' },
+  { key: 'pdf', label: 'PDF', icon: 'document-outline' },
+  { key: 'note', label: 'Note', icon: 'document-text-outline' },
 ];
 
 const CATEGORIES = [
-  { key: 'anxiete', label: '😰 Anxiété' },
-  { key: 'depression', label: '😔 Dépression' },
-  { key: 'stress', label: '😤 Stress' },
-  { key: 'sommeil', label: '😴 Sommeil' },
-  { key: 'confiance', label: '💪 Confiance' },
-  { key: 'deuil', label: '🕊️ Deuil' },
-  { key: 'autre', label: '📌 Autre' },
+  { key: 'anxiete', label: 'Anxiété' },
+  { key: 'depression', label: 'Dépression' },
+  { key: 'stress', label: 'Stress' },
+  { key: 'sommeil', label: 'Sommeil' },
+  { key: 'confiance', label: 'Confiance' },
+  { key: 'deuil', label: 'Deuil' },
+  { key: 'autre', label: 'Autre' },
 ];
+
+const getTypeIcon = (type) => (type === 'note' ? 'document-text-outline' : type === 'pdf' ? 'document-outline' : 'videocam-outline');
+const getCategorieLabel = (cat) => CATEGORIES.find((c) => c.key === cat)?.label || cat;
 
 export default function RessourcesScreen({ hideHeader = false }) {
   const { token } = useAuth();
@@ -54,7 +58,7 @@ export default function RessourcesScreen({ hideHeader = false }) {
       const data = await res.json();
       if (data.success) {
         const etudiants = []; const ids = new Set();
-        (data.data || []).forEach(c => { if (c.etudiant && !ids.has(c.etudiant.id)) { ids.add(c.etudiant.id); etudiants.push(c.etudiant); } });
+        (data.data || []).forEach((c) => { if (c.etudiant && !ids.has(c.etudiant.id)) { ids.add(c.etudiant.id); etudiants.push(c.etudiant); } });
         setPatients(etudiants);
       }
     } catch (error) { console.error('Erreur patients:', error); }
@@ -81,7 +85,7 @@ export default function RessourcesScreen({ hideHeader = false }) {
       };
       const res = await fetch(`${API_URL}/ressources`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
       const data = await res.json();
-      if (data.success) { setModalVisible(false); resetForm(); loadRessources(); Alert.alert('✅', 'Ressource ajoutée !'); }
+      if (data.success) { setModalVisible(false); resetForm(); loadRessources(); Alert.alert('Ajoutée', 'Ressource ajoutée !'); }
       else Alert.alert('Erreur', data.message || 'Erreur');
     } catch (error) { Alert.alert('Erreur', 'Erreur réseau'); } finally { setSaving(false); }
   };
@@ -93,75 +97,79 @@ export default function RessourcesScreen({ hideHeader = false }) {
     ]);
   };
 
-  const getTypeIcon = (type) => type === 'note' ? '📝' : type === 'pdf' ? '📄' : '🎥';
-
-  const ressourcesFiltrees = filtreType === 'all' ? ressources : ressources.filter(r => {
+  const ressourcesFiltrees = filtreType === 'all' ? ressources : ressources.filter((r) => {
     if (filtreType === 'video') return r.type === 'lien_youtube' || r.type === 'lien_web';
     if (filtreType === 'pdf') return r.type === 'pdf';
     if (filtreType === 'note') return r.type === 'note';
     return true;
   });
 
-  if (loading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={COLORS.secondary} /></View>;
+  if (loading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={colors.primary} /></View>;
 
   return (
     <View style={styles.container}>
-      {!hideHeader && (
+      {!hideHeader ? (
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>📚 Mes Ressources</Text>
+            <Text style={styles.headerTitle}>Mes Ressources</Text>
             <Text style={styles.headerSub}>{ressources.length} ressource(s)</Text>
           </View>
-          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-            <Text style={styles.addBtnText}>+ Ajouter</Text>
+          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)} activeOpacity={0.85}>
+            <Ionicons name="add" size={18} color={colors.primary} />
+            <Text style={styles.addBtnText}>Ajouter</Text>
           </TouchableOpacity>
         </View>
-      )}
-
-      {hideHeader && (
+      ) : (
         <View style={styles.addBtnRow}>
           <Text style={styles.countText}>{ressources.length} ressource(s)</Text>
-          <TouchableOpacity style={styles.addBtnSmall} onPress={() => setModalVisible(true)}>
-            <Text style={styles.addBtnText}>+ Ajouter</Text>
+          <TouchableOpacity style={styles.addBtnSmall} onPress={() => setModalVisible(true)} activeOpacity={0.85}>
+            <Ionicons name="add" size={16} color={colors.white} />
+            <Text style={styles.addBtnSmallText}>Ajouter</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtresContainer}>
-        {[{ key: 'all', label: '📋 Tout' }, ...TYPES].map(f => (
-          <TouchableOpacity key={f.key} style={[styles.filtreBtn, filtreType === f.key && styles.filtreBtnActive]} onPress={() => setFiltreType(f.key)}>
-            <Text style={[styles.filtreText, filtreType === f.key && styles.filtreTextActive]}>{f.icon ? `${f.icon} ${f.label}` : f.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtresContainer}>
+          {[{ key: 'all', label: 'Tout' }, ...TYPES].map((f) => (
+            <TouchableOpacity key={f.key} style={[styles.filtreBtn, filtreType === f.key && styles.filtreBtnActive]} onPress={() => setFiltreType(f.key)} activeOpacity={0.8}>
+              <Text style={[styles.filtreText, filtreType === f.key && styles.filtreTextActive]}>{f.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContainer}>
         {ressourcesFiltrees.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>📭</Text>
-            <Text style={styles.emptyTitle}>Aucune ressource</Text>
-            <Text style={styles.emptyText}>Ajoutez des ressources pour vos patients</Text>
-            <TouchableOpacity style={styles.emptyBtn} onPress={() => setModalVisible(true)}>
-              <Text style={styles.emptyBtnText}>+ Ajouter</Text>
-            </TouchableOpacity>
-          </View>
+          <EmptyState icon="library-outline" title="Aucune ressource" subtitle="Ajoutez des ressources pour vos patients." actionLabel="Ajouter" onAction={() => setModalVisible(true)} style={{ marginTop: spacing.lg }} />
         ) : (
           ressourcesFiltrees.map((r) => (
-            <View key={r.id} style={styles.card}>
+            <Card key={r.id} style={styles.card}>
               <View style={styles.cardHeader}>
-                <View style={styles.typeIconContainer}><Text style={styles.typeIcon}>{getTypeIcon(r.type)}</Text></View>
+                <View style={styles.typeIcon}>
+                  <Ionicons name={getTypeIcon(r.type)} size={22} color={colors.primary} />
+                </View>
                 <View style={styles.cardInfo}>
                   <Text style={styles.cardTitre}>{r.titre}</Text>
-                  <Text style={styles.cardCategorie}>{CATEGORIES.find(c => c.key === r.categorie)?.label || r.categorie}</Text>
+                  <View style={styles.metaRow}>
+                    <Badge label={getCategorieLabel(r.categorie)} tone="primary" />
+                    <Badge label={r.public ? 'Public' : 'Privé'} tone={r.public ? 'success' : 'warning'} dot />
+                  </View>
                   {r.description ? <Text style={styles.cardDesc} numberOfLines={2}>{r.description}</Text> : null}
                 </View>
-                <Text style={[styles.visibiliteText, { color: r.public ? COLORS.success : COLORS.warning }]}>{r.public ? '🌍' : '🔒'}</Text>
               </View>
               <View style={styles.cardActions}>
-                {r.url && <TouchableOpacity style={styles.openBtn} onPress={() => Linking.openURL(r.url)}><Text style={styles.openBtnText}>🔗 Ouvrir</Text></TouchableOpacity>}
-                <TouchableOpacity style={styles.deleteBtn} onPress={() => handleSupprimer(r.id)}><Text style={styles.deleteBtnText}>🗑️</Text></TouchableOpacity>
+                {r.url ? (
+                  <TouchableOpacity style={styles.openBtn} onPress={() => Linking.openURL(r.url)} activeOpacity={0.85}>
+                    <Ionicons name="open-outline" size={16} color={colors.primary} />
+                    <Text style={styles.openBtnText}>Ouvrir</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => handleSupprimer(r.id)} activeOpacity={0.85}>
+                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                </TouchableOpacity>
               </View>
-            </View>
+            </Card>
           ))
         )}
         <View style={{ height: 20 }} />
@@ -169,74 +177,82 @@ export default function RessourcesScreen({ hideHeader = false }) {
 
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <ScrollView>
+          <ScrollView keyboardShouldPersistTaps="handled">
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>➕ Nouvelle ressource</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Nouvelle ressource</Text>
+
               <Text style={styles.modalLabel}>Type</Text>
               <View style={styles.typeRow}>
-                {TYPES.map(t => (
-                  <TouchableOpacity key={t.key} style={[styles.typeBtn, form.type === t.key && styles.typeBtnActive]} onPress={() => setForm({ ...form, type: t.key })}>
-                    <Text style={styles.typeBtnIcon}>{t.icon}</Text>
-                    <Text style={[styles.typeBtnText, form.type === t.key && styles.typeBtnTextActive]}>{t.label}</Text>
+                {TYPES.map((t) => (
+                  <TouchableOpacity key={t.key} style={[styles.typeBtn, form.type === t.key && styles.typeBtnActive]} onPress={() => setForm({ ...form, type: t.key })} activeOpacity={0.85}>
+                    <Ionicons name={t.icon} size={24} color={form.type === t.key ? colors.primary : colors.textMuted} />
+                    <Text style={[styles.typeBtnText, form.type === t.key && { color: colors.primaryDark }]}>{t.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+
               <Text style={styles.modalLabel}>Titre *</Text>
-              <TextInput style={styles.input} value={form.titre} onChangeText={(v) => setForm({ ...form, titre: v })} placeholder="Titre de la ressource" placeholderTextColor={COLORS.greyDark} />
-              {form.type !== 'note' && (
+              <TextInput style={styles.input} value={form.titre} onChangeText={(v) => setForm({ ...form, titre: v })} placeholder="Titre de la ressource" placeholderTextColor={colors.textFaint} />
+
+              {form.type !== 'note' ? (
                 <>
-                  <Text style={styles.modalLabel}>{form.type === 'video' ? '🔗 Lien YouTube / Vidéo *' : '🔗 Lien PDF *'}</Text>
-                  <TextInput style={styles.input} value={form.lien} onChangeText={(v) => setForm({ ...form, lien: v })} placeholder="https://..." placeholderTextColor={COLORS.greyDark} autoCapitalize="none" keyboardType="url" />
+                  <Text style={styles.modalLabel}>{form.type === 'video' ? 'Lien YouTube / Vidéo *' : 'Lien PDF *'}</Text>
+                  <TextInput style={styles.input} value={form.lien} onChangeText={(v) => setForm({ ...form, lien: v })} placeholder="https://…" placeholderTextColor={colors.textFaint} autoCapitalize="none" keyboardType="url" />
                   <Text style={styles.modalLabel}>Description (optionnel)</Text>
-                  <TextInput style={[styles.input, styles.textAreaInput]} value={form.description} onChangeText={(v) => setForm({ ...form, description: v })} placeholder="Décrivez cette ressource..." placeholderTextColor={COLORS.greyDark} multiline numberOfLines={3} />
+                  <TextInput style={[styles.input, styles.textAreaInput]} value={form.description} onChangeText={(v) => setForm({ ...form, description: v })} placeholder="Décrivez cette ressource…" placeholderTextColor={colors.textFaint} multiline numberOfLines={3} />
                 </>
-              )}
-              {form.type === 'note' && (
+              ) : (
                 <>
-                  <Text style={styles.modalLabel}>📝 Texte *</Text>
-                  <TextInput style={[styles.input, styles.noteInput]} value={form.note_texte} onChangeText={(v) => setForm({ ...form, note_texte: v })} placeholder="Écrivez votre note ici..." placeholderTextColor={COLORS.greyDark} multiline numberOfLines={6} />
+                  <Text style={styles.modalLabel}>Texte *</Text>
+                  <TextInput style={[styles.input, styles.noteInput]} value={form.note_texte} onChangeText={(v) => setForm({ ...form, note_texte: v })} placeholder="Écrivez votre note ici…" placeholderTextColor={colors.textFaint} multiline numberOfLines={6} />
                 </>
               )}
+
               <Text style={styles.modalLabel}>Catégorie</Text>
-              <View style={styles.categorieGrid}>
-                {CATEGORIES.map(c => (
-                  <TouchableOpacity key={c.key} style={[styles.categorieBtn, form.categorie === c.key && styles.categorieBtnActive]} onPress={() => setForm({ ...form, categorie: c.key })}>
-                    <Text style={[styles.categorieBtnText, form.categorie === c.key && styles.categorieBtnTextActive]}>{c.label}</Text>
+              <View style={styles.wrapRow}>
+                {CATEGORIES.map((c) => (
+                  <TouchableOpacity key={c.key} style={[styles.chipBtn, form.categorie === c.key && styles.chipBtnActive]} onPress={() => setForm({ ...form, categorie: c.key })} activeOpacity={0.8}>
+                    <Text style={[styles.chipText, form.categorie === c.key && styles.chipTextActive]}>{c.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+
               <Text style={styles.modalLabel}>Partager avec</Text>
               <View style={styles.visibiliteRow}>
-                <TouchableOpacity style={[styles.visibiliteBtn, form.visibilite === 'public' && styles.visibiliteBtnActive]} onPress={() => setForm({ ...form, visibilite: 'public', patient_id: null })}>
-                  <Text style={styles.visibiliteBtnIcon}>🌍</Text>
-                  <Text style={[styles.visibiliteBtnText, form.visibilite === 'public' && styles.visibiliteBtnTextActive]}>Tous mes patients</Text>
+                <TouchableOpacity style={[styles.visibiliteBtn, form.visibilite === 'public' && styles.visibiliteBtnActive]} onPress={() => setForm({ ...form, visibilite: 'public', patient_id: null })} activeOpacity={0.85}>
+                  <Ionicons name="earth" size={22} color={form.visibilite === 'public' ? colors.primary : colors.textMuted} />
+                  <Text style={[styles.visibiliteBtnText, form.visibilite === 'public' && { color: colors.primaryDark }]}>Tous mes patients</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.visibiliteBtn, form.visibilite === 'prive' && styles.visibiliteBtnPriveActive]} onPress={() => setForm({ ...form, visibilite: 'prive' })}>
-                  <Text style={styles.visibiliteBtnIcon}>🔒</Text>
-                  <Text style={[styles.visibiliteBtnText, form.visibilite === 'prive' && styles.visibiliteBtnTextActive]}>Un patient</Text>
+                <TouchableOpacity style={[styles.visibiliteBtn, form.visibilite === 'prive' && styles.visibiliteBtnPriveActive]} onPress={() => setForm({ ...form, visibilite: 'prive' })} activeOpacity={0.85}>
+                  <Ionicons name="lock-closed" size={22} color={form.visibilite === 'prive' ? colors.warning : colors.textMuted} />
+                  <Text style={[styles.visibiliteBtnText, form.visibilite === 'prive' && { color: colors.warning }]}>Un patient</Text>
                 </TouchableOpacity>
               </View>
-              {form.visibilite === 'prive' && (
+
+              {form.visibilite === 'prive' ? (
                 <>
                   <Text style={styles.modalLabel}>Choisir le patient</Text>
                   {patients.length === 0 ? (
                     <View style={styles.noPatientCard}><Text style={styles.noPatientText}>Aucun patient trouvé</Text></View>
                   ) : (
-                    patients.map(p => (
-                      <TouchableOpacity key={p.id} style={[styles.patientBtn, form.patient_id === p.id && styles.patientBtnActive]} onPress={() => setForm({ ...form, patient_id: p.id })}>
-                        <View style={styles.patientAvatar}><Text style={styles.patientAvatarText}>{p.user?.name?.charAt(0)?.toUpperCase() || '👤'}</Text></View>
-                        <Text style={[styles.patientName, form.patient_id === p.id && styles.patientNameActive]}>{p.user?.name || 'Patient'}</Text>
-                        {form.patient_id === p.id && <Text style={styles.patientCheck}>✅</Text>}
-                      </TouchableOpacity>
-                    ))
+                    patients.map((p) => {
+                      const active = form.patient_id === p.id;
+                      return (
+                        <TouchableOpacity key={p.id} style={[styles.patientBtn, active && styles.patientBtnActive]} onPress={() => setForm({ ...form, patient_id: p.id })} activeOpacity={0.85}>
+                          <Avatar name={p.user?.name} size={36} />
+                          <Text style={[styles.patientName, active && { color: colors.primaryDark }]}>{p.user?.name || 'Patient'}</Text>
+                          {active ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
+                        </TouchableOpacity>
+                      );
+                    })
                   )}
                 </>
-              )}
+              ) : null}
+
               <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setModalVisible(false); resetForm(); }}><Text style={styles.cancelText}>Annuler</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSauvegarder} disabled={saving}>
-                  {saving ? <ActivityIndicator color={COLORS.white} size="small" /> : <Text style={styles.saveText}>Enregistrer</Text>}
-                </TouchableOpacity>
+                <Button label="Annuler" variant="outline" onPress={() => { setModalVisible(false); resetForm(); }} style={{ flex: 1 }} />
+                <Button label="Enregistrer" onPress={handleSauvegarder} loading={saving} style={{ flex: 1 }} />
               </View>
             </View>
           </ScrollView>
@@ -247,80 +263,60 @@ export default function RessourcesScreen({ hideHeader = false }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: COLORS.secondary, padding: 20, paddingTop: 10, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.white },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 4 },
-  addBtnRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10 },
-  countText: { fontSize: 13, color: COLORS.greyDark },
-  addBtn: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  addBtnSmall: { backgroundColor: COLORS.secondary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  addBtnText: { color: COLORS.secondary, fontWeight: 'bold', fontSize: 14 },
-  filtresContainer: { paddingHorizontal: 16, paddingVertical: 12, maxHeight: 60 },
-  filtreBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.white, marginRight: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  filtreBtnActive: { backgroundColor: COLORS.secondary, borderColor: COLORS.secondary },
-  filtreText: { fontSize: 12, color: COLORS.greyDark, fontWeight: '600' },
-  filtreTextActive: { color: COLORS.white },
-  listContainer: { paddingHorizontal: 16, paddingTop: 8 },
-  emptyCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 20 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, marginBottom: 8 },
-  emptyText: { fontSize: 13, color: COLORS.greyDark, textAlign: 'center', marginBottom: 16 },
-  emptyBtn: { backgroundColor: COLORS.secondary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  emptyBtnText: { color: COLORS.white, fontWeight: 'bold' },
-  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+  container: { flex: 1, backgroundColor: colors.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.primary, paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xl, borderBottomLeftRadius: radius.xxl, borderBottomRightRadius: radius.xxl },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: colors.white },
+  headerSub: { fontSize: 13, color: colors.primaryLight, marginTop: 4 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.white, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full },
+  addBtnText: { color: colors.primary, fontWeight: '700', fontSize: 14 },
+  addBtnRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  countText: { fontSize: 13, color: colors.textMuted },
+  addBtnSmall: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full },
+  addBtnSmallText: { color: colors.white, fontWeight: '700', fontSize: 14 },
+  filtresContainer: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
+  filtreBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  filtreBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filtreText: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
+  filtreTextActive: { color: colors.white },
+  listContainer: { paddingHorizontal: spacing.lg, paddingTop: spacing.xs },
+  card: { marginBottom: spacing.md },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start' },
-  typeIconContainer: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.secondaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  typeIcon: { fontSize: 22 },
+  typeIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md },
   cardInfo: { flex: 1 },
-  cardTitre: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
-  cardCategorie: { fontSize: 12, color: COLORS.secondary, marginTop: 2 },
-  cardDesc: { fontSize: 12, color: COLORS.greyDark, marginTop: 4, lineHeight: 18 },
-  visibiliteText: { fontSize: 18, marginLeft: 8 },
-  cardActions: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  openBtn: { flex: 1, backgroundColor: COLORS.secondaryLight, padding: 10, borderRadius: 10, alignItems: 'center' },
-  openBtnText: { fontSize: 13, color: COLORS.secondary, fontWeight: '600' },
-  deleteBtn: { backgroundColor: '#FFEBEE', padding: 10, borderRadius: 10, alignItems: 'center', paddingHorizontal: 16 },
-  deleteBtnText: { fontSize: 18 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: COLORS.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.text, marginBottom: 20, textAlign: 'center' },
-  modalLabel: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 10, marginTop: 14 },
-  typeRow: { flexDirection: 'row', gap: 10 },
-  typeBtn: { flex: 1, alignItems: 'center', padding: 12, borderRadius: 12, backgroundColor: COLORS.background, borderWidth: 1.5, borderColor: '#E2E8F0' },
-  typeBtnActive: { backgroundColor: COLORS.secondaryLight, borderColor: COLORS.secondary },
-  typeBtnIcon: { fontSize: 28, marginBottom: 4 },
-  typeBtnText: { fontSize: 11, color: COLORS.text, fontWeight: '600', textAlign: 'center' },
-  typeBtnTextActive: { color: COLORS.secondary },
-  input: { backgroundColor: COLORS.background, borderWidth: 1.5, borderColor: '#D4EDED', borderRadius: 10, padding: 12, fontSize: 14, color: COLORS.text },
+  cardTitre: { fontSize: 15, fontWeight: '700', color: colors.text },
+  metaRow: { flexDirection: 'row', gap: spacing.sm, marginTop: 6, flexWrap: 'wrap' },
+  cardDesc: { fontSize: 12, color: colors.textMuted, marginTop: 6, lineHeight: 18 },
+  cardActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  openBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.primaryLight, padding: 10, borderRadius: radius.md },
+  openBtnText: { fontSize: 14, color: colors.primary, fontWeight: '700' },
+  deleteBtn: { backgroundColor: colors.dangerLight, paddingHorizontal: 16, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, padding: spacing.xxl, paddingBottom: spacing.huge },
+  modalHandle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong, marginBottom: spacing.lg },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: spacing.sm, textAlign: 'center' },
+  modalLabel: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: spacing.sm, marginTop: spacing.md },
+  typeRow: { flexDirection: 'row', gap: spacing.sm },
+  typeBtn: { flex: 1, alignItems: 'center', gap: 4, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceAlt, borderWidth: 1.5, borderColor: colors.border },
+  typeBtnActive: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+  typeBtnText: { fontSize: 12, color: colors.text, fontWeight: '600', textAlign: 'center' },
+  input: { backgroundColor: colors.surfaceAlt, borderWidth: 1.5, borderColor: colors.border, borderRadius: radius.md, padding: 12, fontSize: 14, color: colors.text },
   textAreaInput: { height: 80, textAlignVertical: 'top' },
   noteInput: { height: 120, textAlignVertical: 'top' },
-  categorieGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  categorieBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.background, borderWidth: 1, borderColor: '#E2E8F0' },
-  categorieBtnActive: { backgroundColor: COLORS.secondary, borderColor: COLORS.secondary },
-  categorieBtnText: { fontSize: 12, color: COLORS.text, fontWeight: '600' },
-  categorieBtnTextActive: { color: COLORS.white },
-  visibiliteRow: { flexDirection: 'row', gap: 12 },
-  visibiliteBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0', backgroundColor: COLORS.white },
-  visibiliteBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
-  visibiliteBtnPriveActive: { borderColor: COLORS.warning, backgroundColor: '#FFF3E0' },
-  visibiliteBtnIcon: { fontSize: 24, marginBottom: 6 },
-  visibiliteBtnText: { fontSize: 13, color: COLORS.text, textAlign: 'center', fontWeight: '600' },
-  visibiliteBtnTextActive: { color: COLORS.primary },
-  noPatientCard: { backgroundColor: COLORS.background, borderRadius: 10, padding: 14, alignItems: 'center' },
-  noPatientText: { fontSize: 13, color: COLORS.greyDark },
-  patientBtn: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, backgroundColor: COLORS.background, marginBottom: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-  patientBtnActive: { backgroundColor: COLORS.primaryLight, borderColor: COLORS.primary },
-  patientAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.secondaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  patientAvatarText: { fontSize: 16, fontWeight: 'bold', color: COLORS.secondary },
-  patientName: { flex: 1, fontSize: 14, color: COLORS.text, fontWeight: '600' },
-  patientNameActive: { color: COLORS.primary },
-  patientCheck: { fontSize: 16 },
-  modalActions: { flexDirection: 'row', gap: 12, marginTop: 20, marginBottom: 10 },
-  cancelBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center', backgroundColor: COLORS.background, borderWidth: 1, borderColor: '#E2E8F0' },
-  cancelText: { fontSize: 15, color: COLORS.text, fontWeight: '600' },
-  saveBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center', backgroundColor: COLORS.secondary },
-  saveBtnDisabled: { backgroundColor: COLORS.greyDark },
-  saveText: { fontSize: 15, color: COLORS.white, fontWeight: 'bold' },
+  wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  chipBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.full, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border },
+  chipBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipText: { fontSize: 12, color: colors.text, fontWeight: '600' },
+  chipTextActive: { color: colors.white },
+  visibiliteRow: { flexDirection: 'row', gap: spacing.md },
+  visibiliteBtn: { flex: 1, padding: spacing.lg, borderRadius: radius.md, alignItems: 'center', gap: 6, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface },
+  visibiliteBtnActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+  visibiliteBtnPriveActive: { borderColor: colors.warning, backgroundColor: colors.warningLight },
+  visibiliteBtnText: { fontSize: 13, color: colors.text, textAlign: 'center', fontWeight: '600' },
+  noPatientCard: { backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: 14, alignItems: 'center' },
+  noPatientText: { fontSize: 13, color: colors.textMuted },
+  patientBtn: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 12, borderRadius: radius.md, backgroundColor: colors.surfaceAlt, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border },
+  patientBtnActive: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+  patientName: { flex: 1, fontSize: 14, color: colors.text, fontWeight: '600' },
+  modalActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xl },
 });
