@@ -113,6 +113,21 @@
         .footer-admin { color: rgba(255,255,255,0.3) !important; font-size: 12px !important; }
         .footer-copy { font-size: 13px; width: 100%; text-align: center; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; }
 
+        /* EQUIPE */
+        .team { padding: 100px 60px; background: white; }
+        .team-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+        .team-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform .2s; }
+        .team-card:hover { transform: translateY(-4px); }
+        .team-card.founder { border-color: var(--teal); }
+        .team-photo { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center 32%; display: block; background: var(--teal-pale); }
+        .team-info { padding: 20px; }
+        .team-badge { display: inline-block; font-size: 11px; font-weight: 700; color: var(--teal-dark); background: var(--teal-light); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+        .team-card.founder .team-badge { background: var(--teal); color: #fff; }
+        .team-info h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+        .team-role { font-size: 12px; color: var(--teal); font-weight: 600; margin-bottom: 10px; }
+        .team-bio { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .partner-logo-text { height: 80px; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 26px; color: var(--teal-dark); margin-bottom: 16px; }
+
         @media (max-width: 900px) {
             nav { padding: 12px 16px; }
             .nav-links { display: none; }
@@ -126,6 +141,8 @@
             .screenshots { padding: 60px 24px; }
             .partners { padding: 60px 24px; }
             .partners-grid { grid-template-columns: 1fr; }
+            .team { padding: 60px 24px; }
+            .team-grid { grid-template-columns: repeat(2,1fr); }
             footer { padding: 40px 24px; }
             .footer-inner { flex-direction: column; text-align: center; }
         }
@@ -142,8 +159,9 @@
     <ul class="nav-links">
         <li><a href="#fonctionnalites">Fonctionnalités</a></li>
         <li><a href="#screenshots">L'application</a></li>
+        <li><a href="#equipe">Équipe</a></li>
         <li><a href="#partenaires">Partenaires</a></li>
-        <li><a href="mailto:kaneabdourahmane46@gmail.com">Contact</a></li>
+        <li><a href="mailto:kabdourahmane@gmail.com">Contact</a></li>
         <li><a href="#telecharger" class="nav-dl">Télécharger</a></li>
     </ul>
 </nav>
@@ -247,6 +265,50 @@
     </div>
 </section>
 
+<!-- EQUIPE -->
+<section class="team" id="equipe">
+    <p class="section-label">Notre équipe</p>
+    <h2 class="section-title">Les visages derrière SunuThérapie</h2>
+    <div class="team-grid">
+        <div class="team-card founder">
+            <img src="/images/team/fatoukinesy.jpg" alt="Fatou Kiné Sy" class="team-photo">
+            <div class="team-info">
+                <span class="team-badge">★ Fondatrice</span>
+                <h3>Fatou Kiné Sy</h3>
+                <p class="team-role">Fondatrice</p>
+                <p class="team-bio">Étudiante à l'Université Cheikh Anta Diop de Dakar. Bouleversée par le suicide de Matar, elle fonde SunuThérapie — d'abord une association de consultation psychologique, aujourd'hui une application dédiée au bien-être mental des étudiants.</p>
+            </div>
+        </div>
+        <div class="team-card">
+            <img src="/images/team/abdoukhadre.jpg" alt="Abdou Khadre Kane" class="team-photo">
+            <div class="team-info">
+                <span class="team-badge">Cofondateur</span>
+                <h3>Abdou Khadre Kane</h3>
+                <p class="team-role">Informaticien &amp; développeur</p>
+                <p class="team-bio">Informaticien et développeur de SunuThérapie. Il conçoit et fait évoluer l'application mobile et la plateforme technique.</p>
+            </div>
+        </div>
+        <div class="team-card">
+            <img src="/images/team/moussasow.jpg" alt="Moussa Sow" class="team-photo">
+            <div class="team-info">
+                <span class="team-badge">Cofondateur</span>
+                <h3>Moussa Sow</h3>
+                <p class="team-role">Doctorant en médecine (UCAD)</p>
+                <p class="team-bio">Doctorant en médecine à l'Université Cheikh Anta Diop de Dakar. Il apporte au projet son expertise médicale et scientifique.</p>
+            </div>
+        </div>
+        <div class="team-card">
+            <img src="/images/team/pierre.jpg" alt="Pierre Vicente" class="team-photo">
+            <div class="team-info">
+                <span class="team-badge">Cofondateur</span>
+                <h3>Pierre Vicente</h3>
+                <p class="team-role">Développeur &amp; identité visuelle</p>
+                <p class="team-bio">Informaticien et développeur de l'application. Il gère l'identité visuelle, l'infographie et la communication de la startup.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- PARTENAIRES -->
 <section class="partners" id="partenaires">
     <p class="section-label">Partenaires</p>
@@ -270,6 +332,16 @@
             <p class="partner-desc">Financement et soutien au développement de SunuThérapie.</p>
             <span class="partner-link">mastercardfdn.org →</span>
         </a>
+        <div class="partner-card">
+            <div class="partner-logo-text">OMS</div>
+            <div class="partner-name">Organisation Mondiale de la Santé</div>
+            <p class="partner-desc">Programme « Jeunes défenseurs de la santé mentale ».</p>
+        </div>
+        <div class="partner-card">
+            <div class="partner-logo-text">MSHP / DSM</div>
+            <div class="partner-name">Ministère de la Santé &amp; Division de la Santé Mentale</div>
+            <p class="partner-desc">Partenaire institutionnel de santé publique au Sénégal.</p>
+        </div>
     </div>
 </section>
 
@@ -284,7 +356,8 @@
             <li><a href="#fonctionnalites">Fonctionnalités</a></li>
             <li><a href="#screenshots">L'application</a></li>
             <li><a href="#partenaires">Partenaires</a></li>
-            <li><a href="mailto:kaneabdourahmane46@gmail.com">Contact</a></li>
+            <li><a href="mailto:kabdourahmane@gmail.com">Contact</a></li>
+            <li><a href="https://wa.me/221784852249">WhatsApp</a></li>
             <li><a href="/admin" class="footer-admin">Admin</a></li>
         </ul>
         <p class="footer-copy">© 2026 SunuThérapie — GIE FUAM. Tous droits réservés.</p>

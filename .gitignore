@@ -55,3 +55,4 @@ _team_photos/
 _site_logos/
 build-*.log
 *.bak
+sunutherapie-api/public/images/team/*.png
