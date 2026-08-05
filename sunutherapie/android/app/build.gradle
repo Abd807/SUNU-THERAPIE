@@ -2,6 +2,13 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Exclure le module de partage d'ecran Agora (non utilise) qui ajoute
+// FOREGROUND_SERVICE_MEDIA_PROJECTION et bloque la publication Play Store.
+configurations.all {
+    exclude group: 'io.agora.rtc', module: 'full-screen-sharing-special'
+}
+
+
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
 /**
