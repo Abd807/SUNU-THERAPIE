@@ -486,12 +486,12 @@
 
       <article class="tl-item flip">
         <div class="tl-media">
-          <img src="/images/parcours/atelier-ministere.webp" alt="Atelier de travail sur la santé mentale avec la Division Santé Mentale">
+          <img src="/images/parcours/jeunes-defenseurs.webp" alt="Les Jeunes Défenseurs de la santé mentale réunis au bureau de l'OMS à Dakar">
         </div>
         <div class="tl-body">
           <span class="tl-date">Avec le Ministère de la Santé</span>
-          <h3>Une santé mentale de proximité, construite ensemble</h3>
-          <p>SunuThérapie travaille aux côtés de la Division Santé Mentale du Ministère de la Santé et de l'Hygiène Publique. L'approche défendue est celle d'une santé mentale de proximité : rapprocher le soin des personnes plutôt que d'attendre qu'elles viennent à lui, et impliquer tous les acteurs — les jeunes au premier rang.</p>
+          <h3>Les Jeunes Défenseurs de la santé mentale</h3>
+          <p>SunuThérapie travaille aux côtés de la Division Santé Mentale du Ministère de la Santé et de l'Hygiène Publique, dans une approche de proximité : rapprocher le soin des personnes plutôt que d'attendre qu'elles viennent à lui. Au premier rang de cette démarche, les Jeunes Défenseurs — des étudiants formés pour parler de santé mentale à leurs pairs, là où la parole circule vraiment.</p>
           <div class="tl-tags">
             <span>Division Santé Mentale</span><span>MSHP</span><span>Jeunes Défenseurs</span>
           </div>
