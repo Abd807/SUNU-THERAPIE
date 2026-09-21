@@ -6,6 +6,7 @@ use App\Filament\Resources\DisponibiliteResource;
 use App\Models\Disponibilite;
 use App\Models\Psychologue;
 use App\Models\User;
+use Carbon\Carbon;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Mail;
 use Filament\Notifications\Notification;
@@ -13,6 +14,17 @@ use Filament\Notifications\Notification;
 class EditDisponibilite extends EditRecord
 {
     protected static string $resource = DisponibiliteResource::class;
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (isset($data['date'], $data['heure_debut'], $data['duree'])) {
+            $debut = Carbon::parse($data['date'] . ' ' . $data['heure_debut']);
+            $data['heure_fin'] = $debut->copy()->addMinutes((int) $data['duree'])->format('H:i');
+            $data['jour_semaine'] = strtolower(Carbon::parse($data['date'])->locale('fr')->dayName);
+        }
+
+        return $data;
+    }
 
     protected function afterSave(): void
     {

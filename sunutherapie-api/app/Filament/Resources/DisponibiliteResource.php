@@ -22,6 +22,66 @@ class DisponibiliteResource extends Resource
     protected static ?string $navigationLabel = 'Calendrier Psy';
     protected static ?string $navigationGroup = 'Planning';
 
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Select::make('psychologue_id')
+                    ->label('Psychothérapeute')
+                    ->required()
+                    ->searchable()
+                    ->options(
+                        Psychologue::with('user')->get()->mapWithKeys(
+                            fn ($psy) => [$psy->id => $psy->user?->name ?? "Psychologue #{$psy->id}"]
+                        )
+                    ),
+
+                Forms\Components\DatePicker::make('date')
+                    ->label('Date')
+                    ->required()
+                    ->native(false),
+
+                Forms\Components\TimePicker::make('heure_debut')
+                    ->label('Heure de début')
+                    ->seconds(false)
+                    ->required(),
+
+                Forms\Components\Select::make('duree')
+                    ->label('Durée')
+                    ->required()
+                    ->default(60)
+                    ->options([
+                        30 => '30 minutes',
+                        45 => '45 minutes',
+                        60 => '1 heure',
+                        90 => '1 h 30',
+                        120 => '2 heures',
+                    ]),
+
+                Forms\Components\Select::make('type')
+                    ->label('Type')
+                    ->required()
+                    ->default('consultation')
+                    ->options([
+                        'consultation' => '🩺 Consultation',
+                        'personnel' => '📌 Personnel',
+                    ]),
+
+                Forms\Components\TextInput::make('titre')
+                    ->label('Intitulé')
+                    ->maxLength(255)
+                    ->placeholder('Consultation SunuThérapie'),
+
+                Forms\Components\Textarea::make('note')
+                    ->label('Note')
+                    ->columnSpanFull(),
+
+                Forms\Components\Toggle::make('actif')
+                    ->label('Actif')
+                    ->default(true),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -124,6 +184,8 @@ class DisponibiliteResource extends Resource
     {
         return [
             'index' => Pages\ListDisponibilites::route('/'),
+            'create' => Pages\CreateDisponibilite::route('/create'),
+            'edit' => Pages\EditDisponibilite::route('/{record}/edit'),
         ];
     }
 }

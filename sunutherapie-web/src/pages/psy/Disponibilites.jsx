@@ -96,28 +96,31 @@ export default function Disponibilites() {
 }
 
 function Ajout({ onClose, onDone }) {
-  const [f, setF] = useState({ date: aujourdhui(), heure_debut: '09:00', heure_fin: '10:00', titre: '' });
+  // L'API attend une durée en minutes et calcule elle-même l'heure de fin et le jour de la semaine.
+  const [f, setF] = useState({ date: aujourdhui(), heure_debut: '09:00', duree: 60, type: 'consultation', titre: '' });
   const [erreur, setErreur] = useState(null);
   const [envoi, setEnvoi] = useState(false);
 
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
 
+  const fin = (() => {
+    const [h, m] = f.heure_debut.split(':').map(Number);
+    if (Number.isNaN(h)) return '';
+    const t = new Date(2000, 0, 1, h, m + Number(f.duree));
+    return `${String(t.getHours()).padStart(2, '0')}h${String(t.getMinutes()).padStart(2, '0')}`;
+  })();
+
   const creer = async (e) => {
     e.preventDefault();
-    if (f.heure_fin <= f.heure_debut) {
-      setErreur('L’heure de fin doit être après l’heure de début.');
-      return;
-    }
     setErreur(null);
     setEnvoi(true);
     try {
       await api.creerDisponibilite({
         date: f.date,
         heure_debut: f.heure_debut,
-        heure_fin: f.heure_fin,
-        titre: f.titre || 'Consultation',
-        type: 'consultation',
-        actif: true,
+        duree: Number(f.duree),
+        type: f.type,
+        titre: f.titre || null,
       });
       onDone();
     } catch (err) {
@@ -139,18 +142,33 @@ function Ajout({ onClose, onDone }) {
 
         <div className="grid grid-2">
           <div className="field">
-            <label htmlFor="hd">Début</label>
+            <label htmlFor="hd">Heure de début</label>
             <input id="hd" type="time" required value={f.heure_debut} onChange={set('heure_debut')} />
           </div>
           <div className="field">
-            <label htmlFor="hf">Fin</label>
-            <input id="hf" type="time" required value={f.heure_fin} onChange={set('heure_fin')} />
+            <label htmlFor="du">Durée</label>
+            <select id="du" value={f.duree} onChange={set('duree')}>
+              <option value={30}>30 minutes</option>
+              <option value={45}>45 minutes</option>
+              <option value={60}>1 heure</option>
+              <option value={90}>1 h 30</option>
+              <option value={120}>2 heures</option>
+            </select>
+            {fin ? <span className="hint">Fin à {fin}</span> : null}
           </div>
         </div>
 
         <div className="field">
+          <label htmlFor="ty">Type</label>
+          <select id="ty" value={f.type} onChange={set('type')}>
+            <option value="consultation">Consultation — réservable par les étudiants</option>
+            <option value="personnel">Personnel — bloque le créneau</option>
+          </select>
+        </div>
+
+        <div className="field">
           <label htmlFor="ti">Intitulé <span style={{ color: 'var(--faint)', fontWeight: 500 }}>(facultatif)</span></label>
-          <input id="ti" value={f.titre} onChange={set('titre')} placeholder="Consultation" />
+          <input id="ti" value={f.titre} onChange={set('titre')} placeholder="Consultation SunuThérapie" />
         </div>
 
         <div className="modal-actions">
