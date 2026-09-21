@@ -3,13 +3,24 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { Icon, initials } from './ui';
 
-const LIENS = [
+const LIENS_ETUDIANT = [
   { to: '/', icon: 'home', label: 'Accueil', end: true },
   { to: '/rendez-vous', icon: 'calendar', label: 'Prendre rendez-vous' },
   { to: '/consultations', icon: 'users', label: 'Mes consultations' },
   { to: '/ressources', icon: 'file', label: 'Mes ressources' },
   { to: '/bibliotheque', icon: 'book', label: 'Bibliothèque' },
   { to: '/forum', icon: 'chat', label: 'Forum' },
+  { to: '/profil', icon: 'user', label: 'Mon profil' },
+];
+
+const LIENS_PSY = [
+  { to: '/', icon: 'home', label: 'Accueil', end: true },
+  { to: '/demandes', icon: 'calendar', label: 'Demandes' },
+  { to: '/consultations', icon: 'users', label: 'Mes consultations' },
+  { to: '/disponibilites', icon: 'calendar', label: 'Mes disponibilités' },
+  { to: '/ressources', icon: 'file', label: 'Mes ressources' },
+  { to: '/notes', icon: 'chat', label: 'Notes de suivi' },
+  { to: '/bibliotheque', icon: 'book', label: 'Bibliothèque' },
   { to: '/profil', icon: 'user', label: 'Mon profil' },
 ];
 
@@ -21,7 +32,9 @@ export default function Layout() {
   // La navigation au clavier ou au clic referme le tiroir sur mobile.
   const fermer = () => setOuvert(false);
 
-  const nom = user?.nom || user?.name || user?.email || 'Étudiant';
+  const estPsy = user?.role === 'psychologue';
+  const liens = estPsy ? LIENS_PSY : LIENS_ETUDIANT;
+  const nom = user?.name || user?.nom || user?.email || 'Utilisateur';
 
   return (
     <div className="shell">
@@ -34,7 +47,7 @@ export default function Layout() {
         </div>
 
         <nav className="side-nav">
-          {LIENS.map((l) => (
+          {liens.map((l) => (
             <NavLink key={l.to} to={l.to} end={l.end} onClick={fermer}
                      className={({ isActive }) => (isActive ? 'active' : undefined)}>
               <Icon name={l.icon} className="ic" />
@@ -48,7 +61,7 @@ export default function Layout() {
             <div className="av">{initials(nom)}</div>
             <div style={{ minWidth: 0 }}>
               <div className="nm">{nom}</div>
-              <div className="rl">{user?.email}</div>
+              <div className="rl">{estPsy ? 'Psychothérapeute' : 'Étudiant'}</div>
             </div>
           </div>
           <button className="btn btn-outline btn-sm btn-block" onClick={signOut}>

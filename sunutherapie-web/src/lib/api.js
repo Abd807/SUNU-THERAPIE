@@ -123,3 +123,30 @@ export function fichierUrl(item) {
 }
 export const couvertureUrl = (item) =>
   item?.couverture_path ? `${ORIGIN}/storage/${String(item.couverture_path).replace(/^\/+/, '')}` : null;
+
+// ─── Espace psychothérapeute ───
+export const getDemandesEnAttente = async () =>
+  list(await request('/consultations/demandes-en-attente'), 'consultations', 'demandes');
+export const getConsultationsAcceptees = async () =>
+  list(await request('/consultations/acceptees'), 'consultations');
+export const getConsultationsPsy = async () =>
+  list(await request('/consultations/historique/psychotherapeute'), 'consultations');
+export const accepterConsultation = (id) =>
+  request(`/consultations/${id}/accepter`, { method: 'PUT' });
+export const refuserConsultation = (id, motif) =>
+  request(`/consultations/${id}/refuser`, { method: 'PUT', body: { motif_refus: motif } });
+export const terminerConsultation = (id) =>
+  request(`/consultations/${id}/terminer`, { method: 'PUT' });
+
+export const getMesDisponibilites = async () => list(await request('/disponibilites/mes-disponibilites'));
+export const creerDisponibilite = (payload) => request('/disponibilites', { method: 'POST', body: payload });
+export const basculerDisponibilite = (id) => request(`/disponibilites/${id}/toggle`, { method: 'PUT' });
+export const supprimerDisponibilite = (id) => request(`/disponibilites/${id}`, { method: 'DELETE' });
+
+export const getMesRessources = async () => list(await request('/ressources/mes-ressources'), 'ressources');
+export const creerRessource = (payload) => request('/ressources', { method: 'POST', body: payload });
+export const supprimerRessource = (id) => request(`/ressources/${id}`, { method: 'DELETE' });
+
+export const getNotesPsy = async () => list(await request('/notes'), 'notes');
+export const creerNote = (payload) => request('/notes', { method: 'POST', body: payload });
+export const supprimerNote = (id) => request(`/notes/${id}`, { method: 'DELETE' });

@@ -5,7 +5,9 @@ import { initials } from '../components/ui';
 
 export default function Profil() {
   const { user, refresh, signOut } = useAuth();
+  const estPsy = user?.role === 'psychologue';
   const etudiant = user?.etudiant || {};
+  const psy = user?.psychologue || {};
   const [f, setF] = useState({
     name: user?.name || '',
     telephone: user?.telephone || '',
@@ -62,11 +64,22 @@ export default function Profil() {
       </div>
 
       <div className="card">
-        <div className="card-h"><h2>Scolarité</h2></div>
-        <Ligne label="Université" valeur={etudiant.universite} />
-        <Ligne label="Faculté" valeur={etudiant.faculte} />
-        <Ligne label="Niveau" valeur={etudiant.niveau} />
-        <Ligne label="Carte d'étudiant" valeur={etudiant.numero_carte_etudiant} />
+        <div className="card-h"><h2>{estPsy ? 'Exercice' : 'Scolarité'}</h2></div>
+        {estPsy ? (
+          <>
+            <Ligne label="Spécialité" valeur={psy.specialite} />
+            <Ligne label="Structure" valeur={psy.structure} />
+            <Ligne label="Numéro d'ordre" valeur={psy.numero_ordre} />
+            <Ligne label="Années d'expérience" valeur={psy.annees_experience} />
+          </>
+        ) : (
+          <>
+            <Ligne label="Université" valeur={etudiant.universite} />
+            <Ligne label="Faculté" valeur={etudiant.faculte} />
+            <Ligne label="Niveau" valeur={etudiant.niveau} />
+            <Ligne label="Carte d'étudiant" valeur={etudiant.numero_carte_etudiant} />
+          </>
+        )}
       </div>
 
       <form className="card" onSubmit={enregistrer}>

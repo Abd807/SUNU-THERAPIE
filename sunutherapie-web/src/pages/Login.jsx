@@ -27,11 +27,7 @@ export default function Login() {
     setErreur(null);
     setEnvoi(true);
     try {
-      const u = await signIn(email.trim(), password);
-      if (u?.role === 'psychologue') {
-        setErreur("L'espace web est réservé aux étudiants pour le moment. Utilisez l'application mobile.");
-        return;
-      }
+      await signIn(email.trim(), password);
       navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
       setErreur(err.message);
