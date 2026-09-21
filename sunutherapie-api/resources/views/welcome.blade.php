@@ -174,8 +174,85 @@
     .sec-head h2{font-size:30px}
   }
 </style>
+
+  /* ── Bandeau Journée mondiale de la santé mentale ── */
+  .jm{background:linear-gradient(115deg,#0A3A63 0%,#0E5E8A 52%,#0E8A8A 100%);color:#fff}
+  .jm-in{max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px}
+  .jm-aff{flex:none;width:44px;height:62px;object-fit:cover;border-radius:6px;
+           box-shadow:0 4px 12px rgba(0,0,0,.28)}
+  .jm-txt{flex:1;min-width:0}
+  .jm-tag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
+           letter-spacing:.8px;text-transform:uppercase;color:#A9E4E4}
+  .jm-theme{font-size:16px;font-weight:600;line-height:1.35;margin-top:3px}
+  .jm-org{font-size:11.5px;color:rgba(255,255,255,.72);margin-top:3px}
+  .jm-cta{flex:none;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);
+           color:#fff;font-weight:700;font-size:13px;padding:10px 18px;border-radius:999px;transition:.2s}
+  .jm-cta:hover{background:rgba(255,255,255,.24)}
+
+  /* ── Notre parcours ── */
+  #parcours{background:var(--surface)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:58px}
+  .stat{background:var(--surfaceAlt);border:1px solid var(--border);border-radius:18px;padding:24px}
+  .stat b{display:block;font-family:'Playfair Display',Georgia,serif;font-size:40px;
+           line-height:1;color:var(--primary);letter-spacing:-1px}
+  .stat p{font-size:14px;color:var(--ink);font-weight:600;margin-top:10px}
+  .stat small{display:block;font-size:11.5px;color:var(--faint);margin-top:6px;line-height:1.45}
+
+  .tl{display:flex;flex-direction:column;gap:26px}
+  .tl-item{display:grid;grid-template-columns:.85fr 1.15fr;gap:0;background:var(--surface);
+            border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:.25s}
+  .tl-item:hover{box-shadow:0 18px 44px rgba(11,58,56,.11);transform:translateY(-3px)}
+  .tl-item.flip .tl-media{order:2}
+  .tl-media{position:relative;background:var(--surfaceAlt);min-height:270px}
+  .tl-media img{width:100%;height:100%;object-fit:cover;display:block}
+  .tl-body{padding:32px 34px;display:flex;flex-direction:column;justify-content:center}
+  .tl-date{display:inline-flex;align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.6px;
+            text-transform:uppercase;color:var(--primaryDark);background:var(--primaryLight);
+            padding:5px 12px;border-radius:999px;margin-bottom:14px}
+  .tl-body h3{font-family:'Playfair Display',Georgia,serif;font-size:25px;line-height:1.18;margin-bottom:12px}
+  .tl-body p{font-size:14.5px;color:var(--muted);line-height:1.65}
+  .tl-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .tl-tags span{font-size:11px;font-weight:600;color:var(--muted);background:var(--surfaceAlt);
+                 border:1px solid var(--border);padding:5px 11px;border-radius:999px}
+
+  /* Accompagnement */
+  .mentors{margin-top:58px;display:grid;grid-template-columns:.8fr 1.2fr;gap:30px;align-items:center;
+            background:linear-gradient(150deg,var(--primaryLight) 0%,#F2FAFA 100%);
+            border:1px solid var(--border);border-radius:22px;padding:30px}
+  .mentors-photo img{width:100%;border-radius:16px;display:block;box-shadow:0 14px 34px rgba(11,58,56,.16)}
+  .mentors-photo figcaption{font-size:11.5px;color:var(--faint);margin-top:10px;text-align:center}
+  .mentor{padding:18px 0}
+  .mentor + .mentor{border-top:1px solid var(--border);margin-top:4px}
+  .mentor h4{font-size:17px;margin-bottom:3px}
+  .mentor .fn{font-size:12.5px;color:var(--accent);font-weight:600;margin-bottom:9px}
+  .mentor p{font-size:13.5px;color:var(--muted);line-height:1.6}
+
+  @media(max-width:900px){
+    .jm-in{flex-wrap:wrap;gap:14px}
+    .jm-cta{width:100%;text-align:center;justify-content:center}
+    .stats{grid-template-columns:1fr}
+    .tl-item,.tl-item.flip{grid-template-columns:1fr}
+    .tl-item.flip .tl-media{order:0}
+    .tl-media{min-height:230px}
+    .tl-body{padding:26px 24px}
+    .mentors{grid-template-columns:1fr}
+  }
+
 </head>
 <body>
+
+<div class="jm">
+  <div class="jm-in">
+    <img class="jm-aff" src="/images/parcours/affiche-10-octobre.webp" alt="Affiche de la Journée mondiale de la santé mentale, 10 octobre">
+    <div class="jm-txt">
+      <span class="jm-tag">10 octobre · Journée mondiale de la santé mentale</span>
+      <p class="jm-theme">« La santé mentale, un droit pour tous, une responsabilité collective »</p>
+      <p class="jm-org">Ministère de la Santé et de l'Hygiène Publique — Division Santé Mentale, en partenariat avec l'OMS</p>
+    </div>
+    <a href="#parcours" class="jm-cta">Notre engagement</a>
+  </div>
+</div>
+
 
 <header class="nav">
   <div class="wrap nav-inner">
@@ -184,6 +261,7 @@
       <a href="#equipe">Notre équipe</a>
       <a href="#fonctionnalites">Fonctionnalités</a>
       <a href="#app">L'application</a>
+      <a href="#parcours">Notre parcours</a>
       <a href="#partenaires">Partenaires</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -357,6 +435,101 @@
     </div>
   </div>
 </section>
+
+<section id="parcours">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Notre parcours</p>
+      <h2 class="serif">Du terrain aux instances régionales</h2>
+      <p>SunuThérapie n'est pas née dans un bureau. Elle avance aux côtés des étudiants, du Ministère de la Santé et des acteurs africains de la santé mentale.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <b>7,8 %</b>
+        <p>Prévalence des troubles mentaux au Sénégal</p>
+        <small>Enquête nationale 2023 — avec une prédominance chez les jeunes.</small>
+      </div>
+      <div class="stat">
+        <b>26</b>
+        <p>Pays réunis à Lomé en juillet 2026</p>
+        <small>Atelier d'apprentissage inter-pays sur la santé mentale, Afrique de l'Ouest et du Centre.</small>
+      </div>
+      <div class="stat">
+        <b>2024-2028</b>
+        <p>Plan stratégique national de santé mentale</p>
+        <small>Le cadre dans lequel s'inscrit notre action auprès des étudiants.</small>
+      </div>
+    </div>
+
+    <div class="tl">
+
+      <article class="tl-item">
+        <div class="tl-media">
+          <img src="/images/parcours/campagne-terrain.webp" alt="T-shirt de campagne : Parler guérit ce que le silence empoisonne">
+        </div>
+        <div class="tl-body">
+          <span class="tl-date">Sur le terrain</span>
+          <h3>« Parler guérit ce que le silence empoisonne »</h3>
+          <p>Notre campagne de sensibilisation va à la rencontre des étudiants, là où ils étudient et vivent. Le message tient en une phrase : demander de l'aide n'est pas un aveu de faiblesse, c'est déjà un soin. Chaque conversation entamée est une souffrance qui cesse d'être portée seule.</p>
+          <div class="tl-tags">
+            <span>IREP</span><span>Amref Health Africa</span><span>Mastercard Foundation</span><span>Africa Health Collaborative</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="tl-item flip">
+        <div class="tl-media">
+          <img src="/images/parcours/atelier-ministere.webp" alt="Atelier de travail sur la santé mentale avec la Division Santé Mentale">
+        </div>
+        <div class="tl-body">
+          <span class="tl-date">Avec le Ministère de la Santé</span>
+          <h3>Une santé mentale de proximité, construite ensemble</h3>
+          <p>SunuThérapie travaille aux côtés de la Division Santé Mentale du Ministère de la Santé et de l'Hygiène Publique. L'approche défendue est celle d'une santé mentale de proximité : rapprocher le soin des personnes plutôt que d'attendre qu'elles viennent à lui, et impliquer tous les acteurs — les jeunes au premier rang.</p>
+          <div class="tl-tags">
+            <span>Division Santé Mentale</span><span>MSHP</span><span>Jeunes Défenseurs</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="tl-item">
+        <div class="tl-media">
+          <img src="/images/parcours/lome-groupe.webp" alt="Participants de l'atelier inter-pays sur la santé mentale à Lomé">
+        </div>
+        <div class="tl-body">
+          <span class="tl-date">Lomé · 15-18 juillet 2026</span>
+          <h3>Atelier d'apprentissage inter-pays sur la santé mentale</h3>
+          <p>Le Togo et l'Organisation mondiale de la Santé ont réuni 26 pays d'Afrique de l'Ouest et du Centre autour d'une même question : comment repenser les systèmes de soins en santé mentale. Une étape préparatoire au 7<sup>e</sup> Sommet mondial ministériel sur la santé mentale, accueilli par le Rwanda en 2027. SunuThérapie y était représentée.</p>
+          <div class="tl-tags">
+            <span>OMS Afrique</span><span>26 pays</span><span>Vers le Sommet mondial 2027</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="mentors">
+      <figure class="mentors-photo">
+        <img src="/images/parcours/dieye-oubraham.webp" alt="Dr Maïmouna Dièye et Dr Lylia Oubraham">
+        <figcaption>Dr Maïmouna Dièye et Dr Lylia Oubraham</figcaption>
+      </figure>
+      <div>
+        <div class="mentor">
+          <h4>Dr Maïmouna Dièye</h4>
+          <p class="fn">Cheffe de la Division Santé Mentale · Psychiatre · Professeure à l'Université Cheikh Anta Diop</p>
+          <p>Elle porte une gestion de proximité de la santé mentale, fondée sur l'implication de tous les acteurs et des jeunes en particulier. Elle a créé et pilote les Jeunes Défenseurs de la santé mentale, et accompagne SunuThérapie sur la santé mentale des étudiants.</p>
+        </div>
+        <div class="mentor">
+          <h4>Dr Lylia Oubraham</h4>
+          <p class="fn">Représentante et coordinatrice du programme de santé mentale des jeunes et des adolescents au Sénégal</p>
+          <p>Femme dynamique et rigoureuse, son travail a fait considérablement avancer la santé mentale au Sénégal. C'est elle qui a initié dans le pays le noyau des Jeunes Défenseurs de la santé mentale.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 
 <section id="partenaires">
   <div class="wrap">
