@@ -32,8 +32,8 @@ class VideoCallController extends Controller
                 ], 403);
             }
 
-            $appId = env('AGORA_APP_ID');
-            $appCertificate = env('AGORA_APP_CERTIFICATE');
+            $appId = config('services.agora.app_id');
+            $appCertificate = config('services.agora.app_certificate');
 
             $channelName = $consultation->agora_channel_name
                 ?? 'sunu_' . $consultationId . '_' . time();
