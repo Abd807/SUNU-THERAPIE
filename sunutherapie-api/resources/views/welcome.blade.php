@@ -233,6 +233,15 @@
                  box-shadow:0 26px 60px rgba(8,58,56,.26)}
   .hero-aff figcaption{margin-top:14px;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted)}
 
+  /* Partenaires : grille reguliere plutot qu'un flex qui casse mal */
+  .partners{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;
+             align-items:end;justify-items:center}
+  .partner{justify-content:flex-end}
+  .partner img{height:58px;width:auto;max-width:100%;object-fit:contain}
+  .partner.wide img{height:42px}
+  .partner .tag{max-width:100%}
+  .partner.text-p .ta{height:58px;font-size:22px}
+
   @media(max-width:900px){
     .jm-in{flex-wrap:wrap;gap:14px}
     .jm-cta{width:100%;text-align:center;justify-content:center}
@@ -242,6 +251,7 @@
     .tl-media{min-height:230px}
     .tl-body{padding:26px 24px}
     .mentors{grid-template-columns:1fr}
+    .partners{grid-template-columns:repeat(2,1fr);gap:28px}
   }
 
 </style>
