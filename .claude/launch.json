@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sunutherapie-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "sunutherapie-web", "--", "--port", "5178"],
+      "port": 5178
+    }
+  ]
+}
