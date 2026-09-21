@@ -173,7 +173,6 @@
     .hero h1{font-size:34px}
     .sec-head h2{font-size:30px}
   }
-</style>
 
   /* ── Bandeau Journée mondiale de la santé mentale ── */
   .jm{background:linear-gradient(115deg,#0A3A63 0%,#0E5E8A 52%,#0E8A8A 100%);color:#fff}
@@ -238,6 +237,7 @@
     .mentors{grid-template-columns:1fr}
   }
 
+</style>
 </head>
 <body>
 
