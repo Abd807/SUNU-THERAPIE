@@ -9,9 +9,25 @@ function youtubeId(url = '') {
   return m ? m[1] : null;
 }
 
+// Le champ `type` varie selon la source : une ressource de psy dit "pdf",
+// un livre de la bibliotheque dit "livre". On decide donc du rendu en
+// croisant le type declare et l'extension reelle du fichier.
+function typeRendu(item, url) {
+  const t = String(item?.type || '').toLowerCase();
+  const chemin = String(url || '').split('?')[0].split('#')[0];
+  const ext = chemin.includes('.') ? chemin.split('.').pop().toLowerCase() : '';
+
+  if (t === 'note') return 'note';
+  if (t === 'lien_youtube' || /youtube\.com|youtu\.be/i.test(url || '')) return 'youtube';
+  if (t === 'pdf' || ext === 'pdf') return 'pdf';
+  if (t === 'video_upload' || ['mp4', 'webm', 'ogv', 'mov', 'm4v'].includes(ext)) return 'video';
+  if (t === 'audio' || ['mp3', 'wav', 'm4a', 'ogg', 'oga', 'aac'].includes(ext)) return 'audio';
+  return 'lien';
+}
+
 export default function Lecteur({ item, onBack }) {
   const url = fichierUrl(item);
-  const type = item.type || (url && /\.pdf($|\?)/i.test(url) ? 'pdf' : 'lien_web');
+  const type = typeRendu(item, url);
 
   return (
     <>
@@ -61,7 +77,7 @@ function Contenu({ type, url, item }) {
     );
   }
 
-  if (type === 'lien_youtube') {
+  if (type === 'youtube') {
     const id = youtubeId(url);
     if (!id) return <LienBrut url={url} />;
     return (
@@ -77,7 +93,7 @@ function Contenu({ type, url, item }) {
     );
   }
 
-  if (type === 'video_upload') {
+  if (type === 'video') {
     return <video src={url} controls style={{ width: '100%', borderRadius: 16, background: '#000' }} />;
   }
 

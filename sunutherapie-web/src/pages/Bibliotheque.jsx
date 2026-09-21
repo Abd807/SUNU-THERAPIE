@@ -57,7 +57,11 @@ export default function Bibliotheque() {
                 <button className="card" key={b.id} style={{ textAlign: 'left', padding: 0, overflow: 'hidden' }}
                         onClick={() => setOuvert(b)}>
                   {couv ? (
-                    <img src={couv} alt="" style={{ width: '100%', height: 150, objectFit: 'cover' }} />
+                    <div style={{ height: 210, background: 'var(--surfaceAlt)', display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+                      <img src={couv} alt="" style={{ maxHeight: '100%', width: 'auto',
+                                                      borderRadius: 6, boxShadow: '0 6px 18px rgba(11,58,56,.18)' }} />
+                    </div>
                   ) : (
                     <div style={{ height: 90, background: 'var(--primaryLight)', display: 'flex',
                                   alignItems: 'center', justifyContent: 'center', fontSize: 34 }}>
@@ -70,7 +74,9 @@ export default function Bibliotheque() {
                       <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, marginTop: 3 }}>{b.auteur}</div>
                     ) : null}
                     {b.description ? (
-                      <p style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 8 }}>{b.description}</p>
+                      <p style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 8,
+                                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden' }}>{b.description}</p>
                     ) : null}
                   </div>
                 </button>
