@@ -268,8 +268,8 @@
     <img class="jm-aff" src="/images/parcours/affiche-10-octobre.webp" alt="Affiche de la Journée mondiale de la santé mentale, 10 octobre">
     <div class="jm-txt">
       <span class="jm-tag">10 octobre · Journée mondiale de la santé mentale</span>
-      <p class="jm-theme">« La santé mentale, un droit pour tous, une responsabilité collective »</p>
-      <p class="jm-org">Ministère de la Santé et de l'Hygiène Publique — Division Santé Mentale, en partenariat avec l'OMS</p>
+      <p class="jm-theme">« Des expériences vécues entendues : des voix réelles, un changement réel »</p>
+      <p class="jm-org">Ministère de la Santé et de l'Hygiène Publique — Division Santé Mentale, en partenariat avec l'OMS et SunuThérapie</p>
     </div>
     <a href="#parcours" class="jm-cta">Notre engagement</a>
   </div>
